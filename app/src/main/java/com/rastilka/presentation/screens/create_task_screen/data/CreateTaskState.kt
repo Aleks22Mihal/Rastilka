@@ -1,0 +1,12 @@
+package com.rastilka.presentation.screens.create_task_screen.data
+
+import com.rastilka.common.app_data.LoadingState
+import com.rastilka.domain.models.User
+
+data class CreateTaskState(
+    val titleText: String = "",
+    val countPrice: String = "",
+    val user: User? = null,
+    val loadingState: LoadingState = LoadingState.SuccessfulLoad,
+    val errorMessage: String = ""
+)
