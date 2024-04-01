@@ -1,6 +1,6 @@
 package com.rastilka.presentation.screens.family_wishes_screen.data
 
-sealed class FamilyWishScreenEvent(){
+sealed class FamilyWishScreenEvent {
     data object Refresh : FamilyWishScreenEvent()
 
     data class AddResponsibleUser(

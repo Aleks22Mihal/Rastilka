@@ -16,21 +16,21 @@ interface MainRepository {
 
     suspend fun getUserBySession(): Resource<User>
 
-    suspend fun login(body: LogInBody): Response<UserWithCondition>
+    suspend fun login(body: LogInBody): Resource<UserWithCondition>
 
     suspend fun logout(): Response<Unit>
 
     suspend fun getFamilyList(): Resource<List<User>>
 
-    suspend fun attachUser(userOneId: String, userTwoId: String): Response<Unit>
+    suspend fun attachUser(userOneId: String, userTwoId: String): Resource<Unit>
 
-    suspend fun detachUser(userOneId: String, userTwoId: String): Response<Unit>
+    suspend fun detachUser(userOneId: String, userTwoId: String): Resource<Unit>
 
     suspend fun sendPoint(toUserId: String, points: Int, comment: String?): Resource<User>
 
     suspend fun getPoint(fromUserId: String, points: Int, comment: String?): Resource<User>
 
-    suspend fun getTransaction(): Response<List<Transaction>>
+    suspend fun getTransaction(): Resource<List<Transaction>>
 
     suspend fun getTaskOrWish(typeId: TypeIdForApi): Resource<List<TaskOrWish>>
 

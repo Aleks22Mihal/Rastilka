@@ -1,19 +1,22 @@
 package com.rastilka.data.repository
 
 import android.net.Uri
-import android.util.Log
 import com.rastilka.common.Resource
 import com.rastilka.common.app_data.EditTaskBody
 import com.rastilka.common.app_data.LogInBody
 import com.rastilka.common.app_data.PriceBody
 import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.data.data_source.remote.ApiService
+import com.rastilka.data.mappers.mapToTaskOrWish
+import com.rastilka.data.mappers.mapToTransaction
+import com.rastilka.data.mappers.mapToUser
+import com.rastilka.data.mappers.mapToUserWithCondition
+import com.rastilka.data.utilits.image_upload.ImageUpload
 import com.rastilka.domain.models.TaskOrWish
 import com.rastilka.domain.models.Transaction
 import com.rastilka.domain.models.User
 import com.rastilka.domain.models.UserWithCondition
 import com.rastilka.domain.repository.MainRepository
-import com.rastilka.domain.utilits.image_upload.ImageUpload
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import retrofit2.Response
@@ -30,29 +33,35 @@ class MainRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getUserBySession(): Resource<User> {
-        Log.e("1", "1")
         return try {
-            Resource.Loading<User>()
             val response = apiService.getUserBySession()
             if (response.isSuccessful) {
-                Log.e("1", "2")
-                Resource.Success(data = response.body())
+                val result = response.body()?.mapToUser()
+                Resource.Success(data = result)
             } else {
-                Log.e("1", "3")
                 Resource.Error(message = "Данные не получены")
             }
         } catch (e: HttpException) {
-            Log.e("1", "4")
             Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
         } catch (e: IOException) {
-            Log.e("1", "5")
             Resource.Error(message = "Нет интернета")
         }
     }
 
-    override suspend fun login(body: LogInBody): Response<UserWithCondition> {
-        Log.e("2", "3")
-        return apiService.login(body)
+    override suspend fun login(body: LogInBody): Resource<UserWithCondition> {
+        return try {
+            val response = apiService.login(body)
+            if (response.isSuccessful) {
+                val result = response.body()?.mapToUserWithCondition()
+                Resource.Success(result)
+            } else {
+                Resource.Error(message = "Данные не получены")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
     }
 
     override suspend fun logout(): Response<Unit> {
@@ -61,10 +70,12 @@ class MainRepositoryImpl @Inject constructor(
 
     override suspend fun getFamilyList(): Resource<List<User>> {
         return try {
-            Resource.Loading<List<User>>()
             val response = apiService.getFamilyList()
             if (response.isSuccessful) {
-                Resource.Success(data = response.body())
+                val result = response.body()?.map { userDTO ->
+                    userDTO.mapToUser()
+                }
+                Resource.Success(data = result)
             } else {
                 Resource.Error(message = "Данные не получены")
             }
@@ -75,12 +86,34 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun attachUser(userOneId: String, userTwoId: String): Response<Unit> {
-        return apiService.attachUser(userOneId, userTwoId)
+    override suspend fun attachUser(userOneId: String, userTwoId: String): Resource<Unit> {
+        return try {
+            val response = apiService.attachUser(userOneId, userTwoId)
+            if (response.isSuccessful) {
+                Resource.Success(data = null)
+            } else {
+                Resource.Error(message = "Данные не получены")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
     }
 
-    override suspend fun detachUser(userOneId: String, userTwoId: String): Response<Unit> {
-        return apiService.detachUser(userOneId, userTwoId)
+    override suspend fun detachUser(userOneId: String, userTwoId: String): Resource<Unit> {
+        return try {
+            val response = apiService.detachUser(userOneId, userTwoId)
+            if (response.isSuccessful) {
+                Resource.Success(data = null)
+            } else {
+                Resource.Error(message = "Данные не получены")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
     }
 
     override suspend fun sendPoint(
@@ -96,7 +129,8 @@ class MainRepositoryImpl @Inject constructor(
                 body = PriceBody(comment)
             )
             if (response.isSuccessful) {
-                Resource.Success(data = response.body())
+                val result = response.body()?.mapToUser()
+                Resource.Success(data = result)
             } else {
                 Resource.Error(message = "Данные не получены")
             }
@@ -120,7 +154,8 @@ class MainRepositoryImpl @Inject constructor(
                 body = PriceBody(comment)
             )
             if (response.isSuccessful) {
-                Resource.Success(data = response.body())
+                val result = response.body()?.mapToUser()
+                Resource.Success(data = result)
             } else {
                 Resource.Error(message = "Данные не получены")
             }
@@ -131,8 +166,23 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTransaction(): Response<List<Transaction>> {
-        return apiService.getTransaction()
+    override suspend fun getTransaction(): Resource<List<Transaction>> {
+        return try {
+            Resource.Loading<List<Transaction>>()
+            val response = apiService.getTransaction()
+            if (response.isSuccessful) {
+                val result = response.body()?.map { transactionDTO ->
+                    transactionDTO.mapToTransaction()
+                }
+                Resource.Success(data = result)
+            } else {
+                Resource.Error(message = "Данные не получены")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
     }
 
     override suspend fun getTaskOrWish(typeId: TypeIdForApi): Resource<List<TaskOrWish>> {
@@ -140,7 +190,10 @@ class MainRepositoryImpl @Inject constructor(
             Resource.Loading<List<TaskOrWish>>()
             val response = apiService.getTaskOrWish(typeId)
             if (response.isSuccessful) {
-                Resource.Success(data = response.body())
+                val result = response.body()?.map { taskOrWishDTO ->
+                    taskOrWishDTO.mapToTaskOrWish()
+                }
+                Resource.Success(data = result)
             } else {
                 Resource.Error(message = "Данные не получены")
             }
@@ -156,7 +209,10 @@ class MainRepositoryImpl @Inject constructor(
             Resource.Loading<List<TaskOrWish>>()
             val response = apiService.getTasksOrWishes(productUrl)
             if (response.isSuccessful) {
-                Resource.Success(data = response.body())
+                val result = response.body()?.map { taskOrWishDTO ->
+                    taskOrWishDTO.mapToTaskOrWish()
+                }
+                Resource.Success(data = result)
             } else {
                 Resource.Error(message = "Данные не получены")
             }
@@ -172,7 +228,8 @@ class MainRepositoryImpl @Inject constructor(
             Resource.Loading<TaskOrWish>()
             val response = apiService.getTaskOrWish(productUrl)
             if (response.isSuccessful) {
-                Resource.Success(data = response.body())
+                val result = response.body()?.mapToTaskOrWish()
+                Resource.Success(data = result)
             } else {
                 Resource.Error(message = "Данные не получены")
             }

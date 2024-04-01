@@ -5,7 +5,7 @@ import com.rastilka.data.data_source.Internal_storage.DataPreferences
 import com.rastilka.data.data_source.remote.ApiService
 import com.rastilka.data.repository.MainRepositoryImpl
 import com.rastilka.domain.repository.MainRepository
-import com.rastilka.domain.utilits.image_upload.ImageUpload
+import com.rastilka.data.utilits.image_upload.ImageUpload
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module

@@ -2,10 +2,14 @@ package com.rastilka.presentation.screens.family_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rastilka.common.Resource
 import com.rastilka.common.app_data.LoadingState
-import com.rastilka.common.app_data.PriceBody
-import com.rastilka.data.data_source.remote.ApiService
 import com.rastilka.domain.models.User
+import com.rastilka.domain.use_case.AttachUserUseCase
+import com.rastilka.domain.use_case.DetachUserUseCase
+import com.rastilka.domain.use_case.GetFamilyMembersUseCase
+import com.rastilka.domain.use_case.GetPointsUseCase
+import com.rastilka.domain.use_case.SendPointsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +18,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FamilyViewModel @Inject constructor(
-    private val repository: ApiService
+    private val getFamilyMembers: GetFamilyMembersUseCase,
+    private val attachUser: AttachUserUseCase,
+    private val detachUser: DetachUserUseCase,
+    private val getPoints: GetPointsUseCase,
+    private val sendPoints: SendPointsUseCase
 ) : ViewModel() {
 
     private val _familyList = MutableStateFlow<List<User>>(emptyList())
@@ -37,17 +45,19 @@ class FamilyViewModel @Inject constructor(
     private fun getFamily() {
         _initLoadingState.value = LoadingState.Loading
         viewModelScope.launch {
-            try {
-                val response = repository.getFamilyList()
-                if (response.isSuccessful) {
-                    _familyList.value = response.body()!!
-                    _initLoadingState.value = LoadingState.SuccessfulLoad
-                } else {
+            when (val resource = getFamilyMembers()) {
+                is Resource.Error -> {
                     _initLoadingState.value = LoadingState.FailedLoad
                 }
-            } catch (e: Exception) {
-                _initLoadingState.value = LoadingState.FailedLoad
-                e.printStackTrace()
+
+                is Resource.Loading -> {
+                    _initLoadingState.value = LoadingState.Loading
+                }
+
+                is Resource.Success -> {
+                    _familyList.value = resource.data ?: emptyList()
+                    _initLoadingState.value = LoadingState.SuccessfulLoad
+                }
             }
         }
     }
@@ -58,22 +68,30 @@ class FamilyViewModel @Inject constructor(
     ) {
         _loadingState.value = LoadingState.Loading
         viewModelScope.launch {
-            try {
-                val response = repository.attachUser(userOneId, userTwoId)
-                if (response.isSuccessful) {
-                    val responseFamily = repository.getFamilyList()
-                    if (response.isSuccessful) {
-                        _familyList.value = responseFamily.body()!!
-                        _loadingState.value = LoadingState.SuccessfulLoad
-                    } else {
-                        _loadingState.value = LoadingState.FailedLoad
-                    }
-                } else {
+            when (attachUser(userOneId, userTwoId)) {
+                is Resource.Error -> {
                     _loadingState.value = LoadingState.FailedLoad
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _loadingState.value = LoadingState.FailedLoad
+
+                is Resource.Loading -> {
+                    _loadingState.value = LoadingState.Loading
+                }
+
+                is Resource.Success -> {
+                    when (val resourceFamilyMembers = getFamilyMembers()) {
+                        is Resource.Error -> {
+                            _loadingState.value = LoadingState.FailedLoad
+                        }
+
+                        is Resource.Loading -> {
+                            _loadingState.value = LoadingState.Loading
+                        }
+
+                        is Resource.Success -> {
+                            _familyList.value = resourceFamilyMembers.data ?: emptyList()
+                        }
+                    }
+                }
             }
         }
     }
@@ -84,22 +102,30 @@ class FamilyViewModel @Inject constructor(
     ) {
         _loadingState.value = LoadingState.Loading
         viewModelScope.launch {
-            try {
-                val response = repository.detachUser(userOneId, userTwoId)
-                if (response.isSuccessful) {
-                    val responseFamily = repository.getFamilyList()
-                    if (response.isSuccessful) {
-                        _familyList.value = responseFamily.body()!!
-                        _loadingState.value = LoadingState.SuccessfulLoad
-                    } else {
-                        _loadingState.value = LoadingState.FailedLoad
-                    }
-                } else {
+            when (detachUser(userOneId, userTwoId)) {
+                is Resource.Error -> {
                     _loadingState.value = LoadingState.FailedLoad
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _loadingState.value = LoadingState.FailedLoad
+
+                is Resource.Loading -> {
+                    _loadingState.value = LoadingState.Loading
+                }
+
+                is Resource.Success -> {
+                    when (val resourceFamilyMembers = getFamilyMembers()) {
+                        is Resource.Error -> {
+                            _loadingState.value = LoadingState.FailedLoad
+                        }
+
+                        is Resource.Loading -> {
+                            _loadingState.value = LoadingState.Loading
+                        }
+
+                        is Resource.Success -> {
+                            _familyList.value = resourceFamilyMembers.data ?: emptyList()
+                        }
+                    }
+                }
             }
         }
     }
@@ -107,22 +133,30 @@ class FamilyViewModel @Inject constructor(
     fun addUserPoint(toUserId: String, point: Int) {
         _loadingState.value = LoadingState.Loading
         viewModelScope.launch {
-            try {
-                val response = repository.sendPoint(toUserId, point, PriceBody())
-                if (response.isSuccessful) {
-                    val responseFamily = repository.getFamilyList()
-                    if (response.isSuccessful) {
-                        _familyList.value = responseFamily.body()!!
-                        _loadingState.value = LoadingState.SuccessfulLoad
-                    } else {
-                        _loadingState.value = LoadingState.FailedLoad
-                    }
-                } else {
+            when (sendPoints(toUserId, point)) {
+                is Resource.Error -> {
                     _loadingState.value = LoadingState.FailedLoad
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _loadingState.value = LoadingState.FailedLoad
+
+                is Resource.Loading -> {
+                    _loadingState.value = LoadingState.Loading
+                }
+
+                is Resource.Success -> {
+                    when (val resourceFamilyMembers = getFamilyMembers()) {
+                        is Resource.Error -> {
+                            _loadingState.value = LoadingState.FailedLoad
+                        }
+
+                        is Resource.Loading -> {
+                            _loadingState.value = LoadingState.Loading
+                        }
+
+                        is Resource.Success -> {
+                            _familyList.value = resourceFamilyMembers.data ?: emptyList()
+                        }
+                    }
+                }
             }
         }
     }
@@ -130,22 +164,30 @@ class FamilyViewModel @Inject constructor(
     fun getUserPoint(fromUserId: String, point: Int) {
         _loadingState.value = LoadingState.Loading
         viewModelScope.launch {
-            try {
-                val response = repository.getPoint(fromUserId, point,PriceBody())
-                if (response.isSuccessful) {
-                    val responseFamily = repository.getFamilyList()
-                    if (response.isSuccessful) {
-                        _familyList.value = responseFamily.body()!!
-                        _loadingState.value = LoadingState.SuccessfulLoad
-                    } else {
-                        _loadingState.value = LoadingState.FailedLoad
-                    }
-                } else {
+            when (getPoints(fromUserId, point)) {
+                is Resource.Error -> {
                     _loadingState.value = LoadingState.FailedLoad
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _loadingState.value = LoadingState.FailedLoad
+
+                is Resource.Loading -> {
+                    _loadingState.value = LoadingState.Loading
+                }
+
+                is Resource.Success -> {
+                    when (val resourceFamilyMembers = getFamilyMembers()) {
+                        is Resource.Error -> {
+                            _loadingState.value = LoadingState.FailedLoad
+                        }
+
+                        is Resource.Loading -> {
+                            _loadingState.value = LoadingState.Loading
+                        }
+
+                        is Resource.Success -> {
+                            _familyList.value = resourceFamilyMembers.data ?: emptyList()
+                        }
+                    }
+                }
             }
         }
     }

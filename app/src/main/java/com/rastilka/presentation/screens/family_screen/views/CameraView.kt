@@ -45,7 +45,7 @@ import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.rastilka.R
 import com.rastilka.presentation.screens.family_screen.FamilyViewModel
-import com.rastilka.domain.utilits.analyzer_qr_code.BarCodeAnalyser
+import com.rastilka.presentation.components_app.analyzer_qr_code.BarCodeAnalyser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService

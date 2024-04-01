@@ -8,6 +8,4 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getUserBySessionKeyUseCase: GetUserBySessionKeyUseCase
-) : ViewModel() {
-
-}
+) : ViewModel()

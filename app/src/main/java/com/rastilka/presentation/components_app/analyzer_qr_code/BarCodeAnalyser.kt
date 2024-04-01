@@ -1,4 +1,4 @@
-package com.rastilka.domain.utilits.analyzer_qr_code
+package com.rastilka.presentation.components_app.analyzer_qr_code
 
 import android.util.Log
 import androidx.camera.core.ExperimentalGetImage

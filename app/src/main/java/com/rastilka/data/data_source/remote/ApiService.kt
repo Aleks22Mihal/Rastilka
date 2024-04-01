@@ -4,10 +4,10 @@ import com.rastilka.common.app_data.EditTaskBody
 import com.rastilka.common.app_data.LogInBody
 import com.rastilka.common.app_data.PriceBody
 import com.rastilka.common.app_data.TypeIdForApi
-import com.rastilka.domain.models.TaskOrWish
-import com.rastilka.domain.models.Transaction
-import com.rastilka.domain.models.User
-import com.rastilka.domain.models.UserWithCondition
+import com.rastilka.data.models.TaskOrWishDTO
+import com.rastilka.data.models.TransactionDTO
+import com.rastilka.data.models.UserDTO
+import com.rastilka.data.models.UserWithConditionDTO
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -28,18 +28,18 @@ interface ApiService {
 
     @GET("api/login/getUserBySession")
     suspend fun getUserBySession(
-    ): Response<User>
+    ): Response<UserDTO>
 
     @POST("api/login/")
     suspend fun login(
         @Body body: LogInBody
-    ): Response<UserWithCondition>
+    ): Response<UserWithConditionDTO>
 
     @GET("api/login/logout")
     suspend fun logout(): Response<Unit>
 
     @GET("api/friend/myFriends")
-    suspend fun getFamilyList(): Response<List<User>>
+    suspend fun getFamilyList(): Response<List<UserDTO>>
 
     @GET("api/friend/attachUser/{userOneId}/{userTwoId}")
     suspend fun attachUser(
@@ -58,32 +58,32 @@ interface ApiService {
         @Path("toUserId") toUserId: String,
         @Path("points") points: Int,
         @Body body: PriceBody
-    ): Response<User>
+    ): Response<UserDTO>
 
     @POST("api/friend/get/{fromUserId}/{points}")
     suspend fun getPoint(
         @Path("fromUserId") fromUserId: String,
         @Path("points") points: Int,
         @Body body: PriceBody
-    ): Response<User>
+    ): Response<UserDTO>
 
     @GET("api/friend/transactions")
-    suspend fun getTransaction(): Response<List<Transaction>>
+    suspend fun getTransaction(): Response<List<TransactionDTO>>
 
     @GET("api/friend/getFriendsProducts/{type_id}")
     suspend fun getTaskOrWish(
         @Path("type_id") typeId: TypeIdForApi
-    ): Response<List<TaskOrWish>>
+    ): Response<List<TaskOrWishDTO>>
 
     @GET("api/friend/userGetProducts/{productUrl}")
     suspend fun getTasksOrWishes(
         @Path("productUrl") productUrl: String,
-    ): Response<List<TaskOrWish>>
+    ): Response<List<TaskOrWishDTO>>
 
     @GET("api/friend/userGetOneProduct/{productUrl}")
     suspend fun getTaskOrWish(
         @Path("productUrl") productUrl: String,
-    ): Response<TaskOrWish>
+    ): Response<TaskOrWishDTO>
 
     @Multipart
     @POST("api/friend/userAddProduct")

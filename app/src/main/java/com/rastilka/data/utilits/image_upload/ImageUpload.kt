@@ -1,4 +1,4 @@
-package com.rastilka.domain.utilits.image_upload
+package com.rastilka.data.utilits.image_upload
 
 import android.content.Context
 import android.graphics.Bitmap
