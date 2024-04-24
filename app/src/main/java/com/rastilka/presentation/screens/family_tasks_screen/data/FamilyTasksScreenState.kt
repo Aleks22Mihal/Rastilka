@@ -8,9 +8,10 @@ data class FamilyTasksScreenState(
     val familyMembers: List<User> = emptyList(),
     val tasksList: List<TaskOrWish> = emptyList(),
     val user: User? = null,
+    val filterUserId : String = "",
     val mainFolderTask: TaskOrWish? = null,
     val filterTasks: List<TaskOrWish> = emptyList(),
     val initLoadingState: LoadingState = LoadingState.Loading,
     val loadingState: LoadingState = LoadingState.SuccessfulLoad,
-    val errorMessage: String = ""
+    val errorMessage: String = "",
 )

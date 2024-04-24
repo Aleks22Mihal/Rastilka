@@ -34,4 +34,11 @@ sealed class FamilyTasksScreenEvent {
         val productUrl: String,
         val title: String
     ) : FamilyTasksScreenEvent()
+
+    data class GetPoint(
+        val points: String,
+        val usersId: List<String>,
+        val productUrl: String,
+        val title: String
+    ) : FamilyTasksScreenEvent()
 }

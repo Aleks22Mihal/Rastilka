@@ -3,7 +3,6 @@ package com.rastilka.presentation.screens.family_tasks_screen.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,7 +72,8 @@ fun CardTaskView(
     didResponsibleUser: (String) -> Unit,
     setResponsibleUser: (String) -> Unit,
     editTask: (property: String, value: String) -> Unit,
-    sendPoint: (usersId: List<String>, points: String, title: String) -> Unit
+    sendPoint: (usersId: List<String>, points: String, title: String) -> Unit,
+    getPoint: (usersId: List<String>, points: String, title: String) -> Unit,
 ) {
 
     var isVisibleDescription by remember {
@@ -223,7 +223,12 @@ fun CardTaskView(
                             setResponsibleUser = setResponsibleUser
                         )
                         if (task.value.price != null && task.float.price != 0f) {
-                            PriceTaskView(task = task, sendPoint = sendPoint, tittle = title)
+                            PriceTaskView(
+                                task = task,
+                                sendPoint = sendPoint,
+                                tittle = title,
+                                getPoint = getPoint
+                            )
                         }
                     }
                 }
@@ -307,7 +312,8 @@ private fun ResponsibleUserTaskView(
 private fun PriceTaskView(
     task: TaskOrWish,
     tittle: String,
-    sendPoint: (usersId: List<String>, points: String, title: String) -> Unit
+    sendPoint: (usersId: List<String>, points: String, title: String) -> Unit,
+    getPoint: (usersId: List<String>, points: String, title: String) -> Unit,
 ) {
     var priceText by remember {
         mutableStateOf(task.value.price ?: "")
@@ -316,16 +322,21 @@ private fun PriceTaskView(
     Spacer(modifier = Modifier.height(8.dp))
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
 
-        Image(
-            painter = painterResource(id = R.drawable.icon_coin_26),
-            contentDescription = ""
-        )
-
-        Spacer(modifier = Modifier.width(10.dp))
+        IconButton(
+            enabled = priceText.isNotEmpty(),
+            onClick = {
+                getPoint(task.uuid.forUsers, priceText, tittle)
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_heart_delete_24),
+                contentDescription = "Send point"
+            )
+        }
 
         BasicTextField(
             value = priceText,
@@ -377,7 +388,8 @@ private fun DemoCardTaskView() {
             didResponsibleUser = {},
             setResponsibleUser = {},
             editTask = { _, _ -> },
-            sendPoint = { _, _, _ -> }
+            sendPoint = { _, _, _ -> },
+            getPoint = { _, _, _ -> },
         )
     }
 }

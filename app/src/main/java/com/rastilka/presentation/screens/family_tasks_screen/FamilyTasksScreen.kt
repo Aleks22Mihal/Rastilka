@@ -123,7 +123,7 @@ fun FamilyTasksScreen(
                         items(state.familyMembers) { familyMember ->
                             FamilyMemberView(
                                 familyMember = familyMember,
-                                isSelected = familyMember.id in state.mainFolderTask?.uuid!!.forUsers,
+                                isSelected = familyMember.id == state.filterUserId,
                                 size = 60.dp,
                                 isVisibleNameUser = false,
                                 select = {
@@ -185,7 +185,17 @@ fun FamilyTasksScreen(
                                             title = title
                                         )
                                     )
-                                }
+                                },
+                                getPoint = { usersId, points, title ->
+                                    viewModel.onEvent(
+                                        FamilyTasksScreenEvent.GetPoint(
+                                            usersId = usersId,
+                                            points = points,
+                                            productUrl = task.value.url,
+                                            title = title
+                                        )
+                                    )
+                                },
                             )
                         }
                     }

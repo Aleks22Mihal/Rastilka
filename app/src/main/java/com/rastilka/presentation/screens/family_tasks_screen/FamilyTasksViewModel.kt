@@ -1,6 +1,5 @@
 package com.rastilka.presentation.screens.family_tasks_screen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rastilka.common.Resource
@@ -9,7 +8,7 @@ import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.domain.use_case.DeleteTaskOrWishUseCase
 import com.rastilka.domain.use_case.EditTaskOrWishUseCase
 import com.rastilka.domain.use_case.GetFamilyMembersUseCase
-import com.rastilka.domain.use_case.GetTaskUseCase
+import com.rastilka.domain.use_case.GetPointsUseCase
 import com.rastilka.domain.use_case.GetTasksOrWishesUseCase
 import com.rastilka.domain.use_case.GetUserBySessionKeyUseCase
 import com.rastilka.domain.use_case.SendPointsUseCase
@@ -32,9 +31,9 @@ class FamilyTasksViewModel @Inject constructor(
     private val setDidResponsibleUser: SetDidResponsibleUser,
     private val addResponsibleUser: SetResponsibleUser,
     private val deleteTask: DeleteTaskOrWishUseCase,
-    private val getTaskUseCase: GetTaskUseCase,
     private val editTaskUseCase: EditTaskOrWishUseCase,
-    private val sendPointsUseCase: SendPointsUseCase
+    private val sendPointsUseCase: SendPointsUseCase,
+    private val getPointsUseCase: GetPointsUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FamilyTasksScreenState())
@@ -74,6 +73,10 @@ class FamilyTasksViewModel @Inject constructor(
             is FamilyTasksScreenEvent.SendPoint -> {
                 sendPoint(event.usersId, event.points, event.productUrl, event.title)
             }
+
+            is FamilyTasksScreenEvent.GetPoint -> {
+                getPoint(event.usersId, event.points, event.productUrl, event.title)
+            }
         }
     }
 
@@ -90,31 +93,16 @@ class FamilyTasksViewModel @Inject constructor(
                 resourceListTasks is Resource.Success &&
                 resourceUser is Resource.Success
             ) {
-                when (val resourceMainFolderTask =
-                    getTaskUseCase.invoke(resourceUser.data!!.id + "_tasks")) {
-                    is Resource.Error -> {
-                        _state.value = state.value.copy(
-                            initLoadingState = LoadingState.FailedLoad,
-                            errorMessage = resourceListTasks.message ?: ""
-                        )
-                    }
+                _state.value = state.value.copy(
+                    tasksList = resourceListTasks.data ?: emptyList(),
+                    filterTasks = resourceListTasks.data ?: emptyList(),
+                    familyMembers = resourceFamilyMembers.data ?: emptyList(),
+                    user = resourceUser.data,
+                    filterUserId = resourceUser.data?.id ?: "",
+                    initLoadingState = LoadingState.SuccessfulLoad
+                )
 
-                    is Resource.Loading -> {
-                        _state.value = state.value.copy(initLoadingState = LoadingState.Loading)
-                    }
-
-                    is Resource.Success -> {
-                        _state.value = state.value.copy(
-                            tasksList = resourceListTasks.data ?: emptyList(),
-                            filterTasks = resourceListTasks.data ?: emptyList(),
-                            familyMembers = resourceFamilyMembers.data ?: emptyList(),
-                            user = resourceUser.data,
-                            mainFolderTask = resourceMainFolderTask.data,
-                            initLoadingState = LoadingState.SuccessfulLoad
-                        )
-                        getFilterTasks()
-                    }
-                }
+                getFilterTasks()
 
             } else if (resourceFamilyMembers is Resource.Loading && resourceListTasks is Resource.Loading && resourceUser is Resource.Loading) {
                 _state.value = state.value.copy(
@@ -131,12 +119,8 @@ class FamilyTasksViewModel @Inject constructor(
 
     private fun getFilterTasks() {
         _state.value = state.value.copy(
-            filterTasks = state.value.tasksList.filter { task ->
-                if (!state.value.mainFolderTask?.uuid?.forUsers.isNullOrEmpty()) {
-                    state.value.mainFolderTask?.uuid?.forUsers!!.any {
-                        it in task.uuid.forUsers
-                    }
-                } else task.uuid.forUsers.isEmpty()
+            filterTasks = state.value.tasksList.filter { tasks ->
+                state.value.filterUserId in tasks.uuid.forUsers
             }
         )
     }
@@ -190,94 +174,156 @@ class FamilyTasksViewModel @Inject constructor(
     }
 
     private fun setFilterUser(userId: String) {
-        viewModelScope.launch {
-            _state.value = state.value.copy(
-                loadingState = LoadingState.Loading
-            )
-            when (val resource = addResponsibleUser.invoke(
-                userId = userId,
-                productUrl = state.value.user!!.id + "_tasks"
-            )) {
-                is Resource.Error -> {
-                    _state.value = state.value.copy(
-                        initLoadingState = LoadingState.FailedLoad,
-                        errorMessage = resource.message ?: ""
-                    )
-                }
-
-                is Resource.Loading -> {
-                    _state.value = state.value.copy(
-                        loadingState = LoadingState.Loading
-                    )
-                }
-
-                is Resource.Success -> {
-                    when (val resourceMainFolderTask =
-                        getTaskUseCase.invoke(state.value.user!!.id + "_tasks")) {
-                        is Resource.Error -> {
-                            _state.value = state.value.copy(
-                                initLoadingState = LoadingState.FailedLoad,
-                                errorMessage = resourceMainFolderTask.message ?: ""
-                            )
-                        }
-
-                        is Resource.Loading -> {
-                            _state.value = state.value.copy(loadingState = LoadingState.Loading)
-                        }
-
-                        is Resource.Success -> {
-                            _state.value = state.value.copy(
-                                mainFolderTask = resourceMainFolderTask.data,
-                                loadingState = LoadingState.SuccessfulLoad
-                            )
-                            getFilterTasks()
-                        }
-                    }
-                }
-            }
-        }
+        _state.value = state.value.copy(
+            filterUserId = userId
+        )
+        getFilterTasks()
     }
 
-    private fun setResponsibleUser(productUrl: String, userId: String) {
+    /*
+    * Берем нашу таску к которой хотим добавить отвественного
+    * Если у нас один юзер есть и его id совпадает нечего не делаем
+    * Иначе если один юзер и его id не совпадает удаляем старого и добавляем нового
+    * Иначе прогоняем цикл чтобы удалить всех пользователей и добавить нового
+    *
+    * Почему так в одной из версий растилок был список отвественныхЮ сейчас только один
+    *
+    */
+    private fun setResponsibleUser(
+        productUrl: String,
+        userId: String,
+    ) {
+
+        _state.value = state.value.copy(
+            loadingState = LoadingState.Loading
+        )
+
         viewModelScope.launch {
-            _state.value = state.value.copy(
-                loadingState = LoadingState.Loading
-            )
-            when (val resource = addResponsibleUser.invoke(productUrl, userId)) {
-                is Resource.Error -> {
+            val task = state.value.tasksList.find { tasks ->
+                productUrl in tasks.value.url
+            }
+
+            if (task != null) {
+                if (task.uuid.forUsers.size == 1 && userId in task.uuid.forUsers) {
                     _state.value = state.value.copy(
-                        loadingState = LoadingState.FailedLoad,
-                        errorMessage = resource.message ?: ""
+                        loadingState = LoadingState.SuccessfulLoad
                     )
-                }
-
-                is Resource.Loading -> {
-                    _state.value = state.value.copy(
-                        loadingState = LoadingState.Loading
-                    )
-                }
-
-                is Resource.Success -> {
-                    when (val resourceListTasks =
-                        getTasksUseCase.invoke(type = TypeIdForApi.tasks)) {
-                        is Resource.Success -> {
-                            _state.value = state.value.copy(
-                                loadingState = LoadingState.SuccessfulLoad,
-                                tasksList = resourceListTasks.data ?: emptyList()
-                            )
-                            getFilterTasks()
-                        }
-
-                        is Resource.Loading -> {
-                            _state.value = state.value.copy(
-                                initLoadingState = LoadingState.Loading,
-                            )
-                        }
-
+                } else if (task.uuid.forUsers.size == 1 && userId !in task.uuid.forUsers) {
+                    when (val resource =
+                        addResponsibleUser.invoke(productUrl, task.uuid.forUsers.first())) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
+                                errorMessage = resource.message ?: ""
                             )
+                        }
+
+                        is Resource.Loading -> {
+                            _state.value = state.value.copy(
+                                loadingState = LoadingState.Loading
+                            )
+                        }
+
+                        is Resource.Success -> {
+                            when (val resourceAdd = addResponsibleUser.invoke(productUrl, userId)) {
+                                is Resource.Error -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.FailedLoad,
+                                        errorMessage = resourceAdd.message ?: ""
+                                    )
+                                }
+
+                                is Resource.Loading -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.Loading
+                                    )
+                                }
+
+                                is Resource.Success -> {
+                                    when (val resourceListTasks =
+                                        getTasksUseCase.invoke(type = TypeIdForApi.tasks)) {
+                                        is Resource.Success -> {
+                                            _state.value = state.value.copy(
+                                                loadingState = LoadingState.SuccessfulLoad,
+                                                tasksList = resourceListTasks.data ?: emptyList()
+                                            )
+                                            getFilterTasks()
+                                        }
+
+                                        is Resource.Loading -> {
+                                            _state.value = state.value.copy(
+                                                initLoadingState = LoadingState.Loading,
+                                            )
+                                        }
+
+                                        is Resource.Error -> {
+                                            _state.value = state.value.copy(
+                                                loadingState = LoadingState.FailedLoad,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    task.uuid.forUsers.forEach { tasksUserId ->
+                        when (val resource = addResponsibleUser.invoke(productUrl, tasksUserId)) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resource.message ?: ""
+                                )
+                                return@forEach
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.Loading
+                                )
+                            }
+
+                            is Resource.Success -> {}
+                        }
+                    }.also {
+                        when (val resourceAdd = addResponsibleUser.invoke(productUrl, userId)) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resourceAdd.message ?: ""
+                                )
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.Loading
+                                )
+                            }
+
+                            is Resource.Success -> {
+                                when (val resourceListTasks =
+                                    getTasksUseCase.invoke(type = TypeIdForApi.tasks)) {
+                                    is Resource.Success -> {
+                                        _state.value = state.value.copy(
+                                            loadingState = LoadingState.SuccessfulLoad,
+                                            tasksList = resourceListTasks.data ?: emptyList()
+                                        )
+                                        getFilterTasks()
+                                    }
+
+                                    is Resource.Loading -> {
+                                        _state.value = state.value.copy(
+                                            initLoadingState = LoadingState.Loading,
+                                        )
+                                    }
+
+                                    is Resource.Error -> {
+                                        _state.value = state.value.copy(
+                                            loadingState = LoadingState.FailedLoad,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -287,7 +333,6 @@ class FamilyTasksViewModel @Inject constructor(
 
     private fun deleteTask(productUrl: String) {
         viewModelScope.launch {
-            Log.e("", "2222")
             _state.value = state.value.copy(
                 loadingState = LoadingState.Loading
             )
@@ -376,7 +421,12 @@ class FamilyTasksViewModel @Inject constructor(
         }
     }
 
-    private fun sendPoint(usersId: List<String>, points: String, productUrl: String, title: String) {
+    private fun sendPoint(
+        usersId: List<String>,
+        points: String,
+        productUrl: String,
+        title: String,
+    ) {
         viewModelScope.launch {
             _state.value = state.value.copy(loadingState = LoadingState.Loading)
             when (val resourceChangePrice = editTaskUseCase.invoke(
@@ -397,7 +447,8 @@ class FamilyTasksViewModel @Inject constructor(
 
                 is Resource.Success -> {
                     usersId.forEach { usersId ->
-                        when (val resource = sendPointsUseCase.invoke(usersId, points.toInt(), title)) {
+                        when (val resource =
+                            sendPointsUseCase.invoke(usersId, points.toInt(), title)) {
                             is Resource.Error -> {
                                 _state.value = state.value.copy(
                                     loadingState = LoadingState.FailedLoad,
@@ -407,7 +458,8 @@ class FamilyTasksViewModel @Inject constructor(
                             }
 
                             is Resource.Loading -> {
-                                _state.value = state.value.copy(loadingState = LoadingState.Loading)
+                                _state.value =
+                                    state.value.copy(loadingState = LoadingState.Loading)
                             }
 
                             is Resource.Success -> {
@@ -417,7 +469,8 @@ class FamilyTasksViewModel @Inject constructor(
                         }
                     }.also {
                         when (
-                            val resourceListTasks = getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                            val resourceListTasks =
+                                getTasksUseCase.invoke(type = TypeIdForApi.tasks)
                         ) {
                             is Resource.Error -> {
                                 _state.value = state.value.copy(
@@ -427,7 +480,85 @@ class FamilyTasksViewModel @Inject constructor(
                             }
 
                             is Resource.Loading -> {
-                                _state.value = state.value.copy(loadingState = LoadingState.Loading)
+                                _state.value =
+                                    state.value.copy(loadingState = LoadingState.Loading)
+                            }
+
+                            is Resource.Success -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.SuccessfulLoad,
+                                    tasksList = resourceListTasks.data ?: emptyList()
+                                )
+                                getFilterTasks()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun getPoint(
+        usersId: List<String>,
+        points: String,
+        productUrl: String,
+        title: String
+    ) {
+        viewModelScope.launch {
+            _state.value = state.value.copy(loadingState = LoadingState.Loading)
+            when (val resourceChangePrice = editTaskUseCase.invoke(
+                property = "price",
+                value = points,
+                productUrl = productUrl,
+            )) {
+                is Resource.Error -> {
+                    _state.value = state.value.copy(
+                        loadingState = LoadingState.FailedLoad,
+                        errorMessage = resourceChangePrice.message ?: ""
+                    )
+                }
+
+                is Resource.Loading -> {
+                    _state.value = state.value.copy(loadingState = LoadingState.Loading)
+                }
+
+                is Resource.Success -> {
+                    usersId.forEach { usersId ->
+                        when (val resource =
+                            getPointsUseCase.invoke(usersId, points.toInt(), title)) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resource.message ?: ""
+                                )
+                                return@forEach
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value =
+                                    state.value.copy(loadingState = LoadingState.Loading)
+                            }
+
+                            is Resource.Success -> {
+                                _state.value =
+                                    state.value.copy(loadingState = LoadingState.SuccessfulLoad)
+                            }
+                        }
+                    }.also {
+                        when (
+                            val resourceListTasks =
+                                getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                        ) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resourceListTasks.message ?: ""
+                                )
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value =
+                                    state.value.copy(loadingState = LoadingState.Loading)
                             }
 
                             is Resource.Success -> {
