@@ -339,4 +339,28 @@ class MainRepositoryImpl @Inject constructor(
             Resource.Error(message = "Нет интернета")
         }
     }
+
+    override suspend fun changeIndexProducts(
+        typeId: TypeIdForApi,
+        urlFrom: String,
+        urlTo: String
+    ): Resource<Unit> {
+        return try {
+            Resource.Loading<Unit>()
+            val response = apiService.changeIndexProducts(
+                typeId = typeId,
+                urlFrom = urlFrom,
+                urlTo = urlTo,
+            )
+            if (response.isSuccessful) {
+                Resource.Success(data = response.body())
+            } else {
+                Resource.Error(message = "Что-то пошло не так")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что-то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
+    }
 }

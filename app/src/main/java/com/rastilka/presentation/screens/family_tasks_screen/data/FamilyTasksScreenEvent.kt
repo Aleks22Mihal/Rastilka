@@ -41,4 +41,21 @@ sealed class FamilyTasksScreenEvent {
         val productUrl: String,
         val title: String
     ) : FamilyTasksScreenEvent()
+
+    data class ChangeLocationItemInList(
+        val urlFrom: String,
+        val urlTo: String,
+    ) : FamilyTasksScreenEvent()
+
+    data class MoveItemInList(
+        val indexFrom: Int,
+        val indexTo: Int,
+    ) : FamilyTasksScreenEvent()
+
+    data class ChangeFilterDate(
+        val state: Boolean
+    ) : FamilyTasksScreenEvent()
+    data class ChangeStateDateDialog(
+        val state: Boolean
+    ) : FamilyTasksScreenEvent()
 }

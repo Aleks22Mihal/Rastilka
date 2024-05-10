@@ -103,6 +103,12 @@ dependencies {
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.view)
 
+    /*Библеотека из https://github.com/aclassen/ComposeReorderable?tab=readme-ov-file
+    * Надо будет избавиться от этой стороней библеотеки
+    * она нужна для изменения списка перетаскиванием
+    * */
+    implementation(libs.sh.reorderable)
+
 /*    implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")*/

@@ -24,8 +24,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -34,8 +34,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,21 +62,25 @@ import androidx.compose.ui.unit.sp
 import com.rastilka.R
 import com.rastilka.common.utilits_support_preview.SupportPreview
 import com.rastilka.domain.models.TaskOrWish
+import com.rastilka.domain.models.TaskOrWishValue
 import com.rastilka.domain.models.User
 import com.rastilka.presentation.components_app.coil_image_view.ImageLoadCoil
+import com.rastilka.presentation.screens.family_tasks_screen.data.FamilyTasksScreenEvent
 import com.rastilka.presentation.ui.theme.RastilkaTheme
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardTaskView(
     task: TaskOrWish,
-    delete: (String) -> Unit,
     familyMembers: List<User>,
-    didResponsibleUser: (String) -> Unit,
-    setResponsibleUser: (String) -> Unit,
-    editTask: (property: String, value: String) -> Unit,
-    sendPoint: (usersId: List<String>, points: String, title: String) -> Unit,
-    getPoint: (usersId: List<String>, points: String, title: String) -> Unit,
+    modifier: Modifier,
+    onEvent: (FamilyTasksScreenEvent) -> Unit,
+    datePikerState: DatePickerState,
+    selectedTaskForChangeDateUrl: MutableState<String>,
 ) {
 
     var isVisibleDescription by remember {
@@ -90,7 +97,7 @@ fun CardTaskView(
         },
         confirmValueChange = {
             if (it == SwipeToDismissBoxValue.EndToStart) {
-                delete(task.value.url)
+                onEvent(FamilyTasksScreenEvent.DeleteTask(productUrl = task.value.url))
                 true
             } else false
         }
@@ -107,7 +114,7 @@ fun CardTaskView(
                     SwipeToDismissBoxValue.StartToEnd -> Color.Transparent
                     SwipeToDismissBoxValue.Settled -> Color.LightGray
                 },
-                label = ""
+                label = "animateColor"
             )
             val scale by animateFloatAsState(
                 when (dismissState.targetValue) {
@@ -115,7 +122,7 @@ fun CardTaskView(
                     SwipeToDismissBoxValue.StartToEnd -> 0f
                     SwipeToDismissBoxValue.Settled -> 1f
                 },
-                label = ""
+                label = "animateFloat"
             )
             Box(
                 modifier = Modifier
@@ -138,7 +145,7 @@ fun CardTaskView(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
             ),
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .clickable {
                     isVisibleDescription = !isVisibleDescription
@@ -158,7 +165,7 @@ fun CardTaskView(
                     DidResponsibleUserTaskView(
                         task = task,
                         familyMembers = familyMembers,
-                        didResponsibleUser = didResponsibleUser,
+                        onEvent = onEvent
                     )
                     AnimatedVisibility(visible = !isVisibleDescription) {
                         Text(
@@ -180,7 +187,13 @@ fun CardTaskView(
                                 .padding(end = 10.dp)
                                 .clickable {
                                     if (task.value.h1 != title) {
-                                        editTask("h1", title)
+                                        onEvent(
+                                            FamilyTasksScreenEvent.EditTask(
+                                                productUrl = task.value.url,
+                                                property = "h1",
+                                                value = title
+                                            )
+                                        )
                                     } else {
                                         isVisibleDescription = !isVisibleDescription
                                         if (!isVisibleDescription) {
@@ -193,7 +206,6 @@ fun CardTaskView(
                 }
 
                 AnimatedVisibility(visible = isVisibleDescription) {
-
                     Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -214,26 +226,34 @@ fun CardTaskView(
                                 contentDescription = ""
                             )
                         }
+                        if (!task.value.date.isNullOrBlank()) {
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            DateTaskView(
+                                task = task.value,
+                                datePikerState = datePikerState,
+                                selectedTaskForChangeDateUrl = selectedTaskForChangeDateUrl,
+                                onEvent = onEvent,
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = "Назначить отвественного")
                         Spacer(modifier = Modifier.height(8.dp))
                         ResponsibleUserTaskView(
                             task = task,
                             familyMembers = familyMembers,
-                            setResponsibleUser = setResponsibleUser
+                            onEvent = onEvent,
                         )
                         if (task.value.price != null && task.float.price != 0f) {
                             PriceTaskView(
                                 task = task,
-                                sendPoint = sendPoint,
                                 tittle = title,
-                                getPoint = getPoint
+                                onEvent = onEvent,
                             )
                         }
                     }
                 }
             }
-            HorizontalDivider()
         }
     }
 }
@@ -243,7 +263,7 @@ fun CardTaskView(
 private fun DidResponsibleUserTaskView(
     task: TaskOrWish,
     familyMembers: List<User>,
-    didResponsibleUser: (String) -> Unit,
+    onEvent: (FamilyTasksScreenEvent) -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -265,7 +285,12 @@ private fun DidResponsibleUserTaskView(
                         )
                         .size(40.dp)
                         .clickable {
-                            didResponsibleUser(familyMember.id)
+                            onEvent(
+                                FamilyTasksScreenEvent.SetDidResponsibleUser(
+                                    task.value.url,
+                                    familyMember.id
+                                )
+                            )
                         },
                     contentDescription = "Avatar Person",
                     contentScale = ContentScale.Crop
@@ -279,7 +304,7 @@ private fun DidResponsibleUserTaskView(
 private fun ResponsibleUserTaskView(
     task: TaskOrWish,
     familyMembers: List<User>,
-    setResponsibleUser: (String) -> Unit,
+    onEvent: (FamilyTasksScreenEvent) -> Unit,
 ) {
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
@@ -299,7 +324,12 @@ private fun ResponsibleUserTaskView(
                     )
                     .size(35.dp)
                     .clickable {
-                        setResponsibleUser(familyMember.id)
+                        onEvent(
+                            FamilyTasksScreenEvent.AddResponsibleUser(
+                                productUrl = task.value.url,
+                                userId = familyMember.id
+                            )
+                        )
                     },
                 contentDescription = "Avatar Person",
                 contentScale = ContentScale.Crop
@@ -312,8 +342,7 @@ private fun ResponsibleUserTaskView(
 private fun PriceTaskView(
     task: TaskOrWish,
     tittle: String,
-    sendPoint: (usersId: List<String>, points: String, title: String) -> Unit,
-    getPoint: (usersId: List<String>, points: String, title: String) -> Unit,
+    onEvent: (FamilyTasksScreenEvent) -> Unit,
 ) {
     var priceText by remember {
         mutableStateOf(task.value.price ?: "")
@@ -329,7 +358,14 @@ private fun PriceTaskView(
         IconButton(
             enabled = priceText.isNotEmpty(),
             onClick = {
-                getPoint(task.uuid.forUsers, priceText, tittle)
+                onEvent(
+                    FamilyTasksScreenEvent.GetPoint(
+                        points = priceText,
+                        usersId = task.uuid.forUsers,
+                        title = tittle,
+                        productUrl = task.value.url
+                    )
+                )
             }
         ) {
             Icon(
@@ -365,7 +401,14 @@ private fun PriceTaskView(
         IconButton(
             enabled = priceText.isNotEmpty(),
             onClick = {
-                sendPoint(task.uuid.forUsers, priceText, tittle)
+                onEvent(
+                    FamilyTasksScreenEvent.SendPoint(
+                        points = priceText,
+                        usersId = task.uuid.forUsers,
+                        title = tittle,
+                        productUrl = task.value.url
+                    )
+                )
             }
         ) {
             Icon(
@@ -376,20 +419,66 @@ private fun PriceTaskView(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateTaskView(
+    task: TaskOrWishValue,
+    datePikerState: DatePickerState,
+    onEvent: (FamilyTasksScreenEvent) -> Unit,
+    selectedTaskForChangeDateUrl: MutableState<String>
+) {
 
+    val apiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    val resultDate = LocalDateTime.parse(task.date, apiFormat)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(text = "Дата")
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextButton(onClick = {
+                if (resultDate > LocalDateTime.now()) {
+                    datePikerState.selectedDateMillis =
+                        resultDate.toEpochSecond(ZoneOffset.UTC) * 1000
+                } else {
+                    datePikerState.selectedDateMillis =
+                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000
+                }
+                selectedTaskForChangeDateUrl.value = task.url
+                onEvent(FamilyTasksScreenEvent.ChangeStateDateDialog(true))
+            }) {
+                Text(
+                    text =
+                    if (resultDate > LocalDateTime.now()) {
+                        "${resultDate.dayOfMonth}.${resultDate.monthValue}.${resultDate.year}"
+                    } else {
+                        val localDateNow = LocalDate.now()
+                        "${localDateNow.dayOfMonth}.${localDateNow.monthValue}.${localDateNow.year}"
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun DemoCardTaskView() {
     RastilkaTheme {
         CardTaskView(
             task = SupportPreview.task,
-            delete = {},
             familyMembers = SupportPreview.listFamily,
-            didResponsibleUser = {},
-            setResponsibleUser = {},
-            editTask = { _, _ -> },
-            sendPoint = { _, _, _ -> },
-            getPoint = { _, _, _ -> },
+            modifier = Modifier,
+            onEvent = {},
+            datePikerState = rememberDatePickerState(),
+            selectedTaskForChangeDateUrl = remember { mutableStateOf("") },
         )
     }
 }

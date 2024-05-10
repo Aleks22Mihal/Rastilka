@@ -53,4 +53,10 @@ interface MainRepository {
     suspend fun didResponsibleUser(productUrl: String, userId: String): Resource<Unit>
 
     suspend fun editTask(productUrl: String, property: String, value: String): Resource<Unit>
+
+    suspend fun changeIndexProducts(
+        typeId: TypeIdForApi,
+        urlFrom: String,
+        urlTo: String,
+    ): Resource<Unit>
 }

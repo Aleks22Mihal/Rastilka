@@ -121,6 +121,13 @@ interface ApiService {
         @Body body: EditTaskBody
     ): Response<Unit>
 
+    @GET("api/friend/moveProducts/{type_id}/{urlFrom}/{urlTo}")
+    suspend fun changeIndexProducts(
+        @Path("type_id") typeId: TypeIdForApi,
+        @Path("urlFrom") urlFrom: String,
+        @Path("urlTo") urlTo: String,
+    ): Response<Unit>
+
     /*
         *//*Получить языки*//*
     @GET("api/s/dictionaries")

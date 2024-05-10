@@ -9,9 +9,11 @@ data class FamilyTasksScreenState(
     val tasksList: List<TaskOrWish> = emptyList(),
     val user: User? = null,
     val filterUserId : String = "",
+    val filterDateNow: Boolean = true,
     val mainFolderTask: TaskOrWish? = null,
     val filterTasks: List<TaskOrWish> = emptyList(),
     val initLoadingState: LoadingState = LoadingState.Loading,
     val loadingState: LoadingState = LoadingState.SuccessfulLoad,
+    val datePickerDialog: Boolean = false,
     val errorMessage: String = "",
 )

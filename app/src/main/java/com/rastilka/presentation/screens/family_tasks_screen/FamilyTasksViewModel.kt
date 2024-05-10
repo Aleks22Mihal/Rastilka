@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rastilka.common.Resource
 import com.rastilka.common.app_data.LoadingState
 import com.rastilka.common.app_data.TypeIdForApi
+import com.rastilka.domain.use_case.ChangeIndexUseCase
 import com.rastilka.domain.use_case.DeleteTaskOrWishUseCase
 import com.rastilka.domain.use_case.EditTaskOrWishUseCase
 import com.rastilka.domain.use_case.GetFamilyMembersUseCase
@@ -21,6 +22,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +37,7 @@ class FamilyTasksViewModel @Inject constructor(
     private val editTaskUseCase: EditTaskOrWishUseCase,
     private val sendPointsUseCase: SendPointsUseCase,
     private val getPointsUseCase: GetPointsUseCase,
+    private val changeIndexUseCase: ChangeIndexUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FamilyTasksScreenState())
@@ -77,6 +81,22 @@ class FamilyTasksViewModel @Inject constructor(
             is FamilyTasksScreenEvent.GetPoint -> {
                 getPoint(event.usersId, event.points, event.productUrl, event.title)
             }
+
+            is FamilyTasksScreenEvent.MoveItemInList -> {
+                moveItemInList(event.indexFrom, event.indexTo)
+            }
+
+            is FamilyTasksScreenEvent.ChangeLocationItemInList -> {
+                changeLocationItemInList(urlTo = event.urlTo, urlFrom = event.urlFrom)
+            }
+
+            is FamilyTasksScreenEvent.ChangeStateDateDialog -> {
+                changeStateDateDialog(event.state)
+            }
+
+            is FamilyTasksScreenEvent.ChangeFilterDate -> {
+                changeFilterDate(event.state)
+            }
         }
     }
 
@@ -95,10 +115,9 @@ class FamilyTasksViewModel @Inject constructor(
             ) {
                 _state.value = state.value.copy(
                     tasksList = resourceListTasks.data ?: emptyList(),
-                    filterTasks = resourceListTasks.data ?: emptyList(),
                     familyMembers = resourceFamilyMembers.data ?: emptyList(),
                     user = resourceUser.data,
-                    filterUserId = resourceUser.data?.id ?: "",
+                    filterUserId = state.value.filterUserId.ifEmpty { resourceUser.data?.id ?: "" },
                     initLoadingState = LoadingState.SuccessfulLoad
                 )
 
@@ -117,11 +136,39 @@ class FamilyTasksViewModel @Inject constructor(
         }
     }
 
-    private fun getFilterTasks() {
+    private fun changeFilterDate(value: Boolean) {
+        _state.value = state.value.copy(filterDateNow = value)
+        getFilterTasks()
+    }
+
+    private fun changeStateDateDialog(value: Boolean) {
         _state.value = state.value.copy(
-            filterTasks = state.value.tasksList.filter { tasks ->
-                state.value.filterUserId in tasks.uuid.forUsers
-            }
+            datePickerDialog = value
+        )
+    }
+
+    private fun getFilterTasks() {
+
+        val filterTaskByUser = state.value.tasksList.filter { task ->
+            state.value.filterUserId in task.uuid.forUsers
+        }
+
+        val filterTaskByDate = filterTaskByUser.filter { task ->
+
+            val apiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+            val resultDate = LocalDate.parse(task.value.date, apiFormat)
+
+            if (state.value.filterDateNow) {
+                resultDate <= LocalDate.now()
+            } else LocalDate.now() < resultDate
+        }
+
+        _state.value = state.value.copy(
+            filterTasks = if (!state.value.filterDateNow) {
+                filterTaskByDate.sortedBy { task ->
+                    task.value.date
+                }
+            }else filterTaskByDate
         )
     }
 
@@ -498,7 +545,7 @@ class FamilyTasksViewModel @Inject constructor(
         }
     }
 
-    fun getPoint(
+    private fun getPoint(
         usersId: List<String>,
         points: String,
         productUrl: String,
@@ -568,6 +615,66 @@ class FamilyTasksViewModel @Inject constructor(
                                 )
                                 getFilterTasks()
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun moveItemInList(from: Int, to: Int) {
+        _state.value = state.value.copy(
+            filterTasks = state.value.filterTasks.toMutableList().apply {
+                add(to, removeAt(from))
+            }
+        )
+    }
+
+    private fun changeLocationItemInList(
+        typeId: TypeIdForApi = TypeIdForApi.tasks,
+        urlFrom: String,
+        urlTo: String
+    ) {
+        _state.value = state.value.copy(
+            loadingState = LoadingState.Loading,
+            //initLoadingState = LoadingState.Loading
+        )
+        viewModelScope.launch {
+            when (val resource = changeIndexUseCase(typeId, urlFrom, urlTo)) {
+                is Resource.Error -> {
+                    _state.value = state.value.copy(
+                        loadingState = LoadingState.FailedLoad,
+                        errorMessage = resource.message ?: ""
+                    )
+                }
+
+                is Resource.Loading -> {
+                    _state.value =
+                        state.value.copy(loadingState = LoadingState.Loading)
+                }
+
+                is Resource.Success -> {
+                    when (val resourceListTasks = getTasksUseCase(type = TypeIdForApi.tasks)) {
+                        is Resource.Success -> {
+
+                            _state.value = state.value.copy(
+                                loadingState = LoadingState.SuccessfulLoad,
+                                //  initLoadingState = LoadingState.SuccessfulLoad,
+                                tasksList = resourceListTasks.data ?: emptyList()
+                            )
+                            getFilterTasks()
+                        }
+
+                        is Resource.Loading -> {
+                            _state.value = state.value.copy(
+                                initLoadingState = LoadingState.Loading,
+                            )
+                        }
+
+                        is Resource.Error -> {
+                            _state.value = state.value.copy(
+                                loadingState = LoadingState.FailedLoad,
+                            )
                         }
                     }
                 }
