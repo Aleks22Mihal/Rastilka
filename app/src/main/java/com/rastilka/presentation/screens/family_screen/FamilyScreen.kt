@@ -2,14 +2,17 @@ package com.rastilka.presentation.screens.family_screen
 
 import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,12 +22,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -32,45 +35,38 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.unit.sp
 import com.rastilka.R
 import com.rastilka.common.app_data.LoadingState
 import com.rastilka.presentation.components_app.error_screen.ErrorView
-import com.rastilka.presentation.components_app.shimmer_brush.ShimmerCardFriend
-import com.rastilka.presentation.components_app.shimmer_brush.animatedShimmer
-import com.rastilka.presentation.screens.family_screen.views.CardFamilyMember
-import com.rastilka.presentation.screens.family_screen.views.ModalBottomQrCodeSheet
+import com.rastilka.presentation.screens.family_screen.componets.CardFamilyMember
+import com.rastilka.presentation.screens.family_screen.componets.ModalBottomQrCodeSheet
+import com.rastilka.presentation.screens.family_screen.data.FamilyScreenEvent
+import com.rastilka.presentation.screens.family_screen.data.FamilyScreenState
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyScreen(
-    viewModel: FamilyViewModel = hiltViewModel(),
+    state: State<FamilyScreenState>,
+    onEvent: (FamilyScreenEvent) -> Unit
 ) {
 
-    val familyList by viewModel.familyList.collectAsState()
-    val initLoadingState by viewModel.initLoadingState.collectAsState()
-    val loadingState by viewModel.loadingState.collectAsState()
-    val scrollListState = rememberLazyListState()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val showBottomSheet = remember { mutableStateOf(false) }
     val stateRefresh = rememberPullToRefreshState(
         positionalThreshold = 180.dp,
         enabled = {
-            initLoadingState == LoadingState.SuccessfulLoad
+            state.value.initLoadingState == LoadingState.SuccessfulLoad
         }
     )
     val scaleFraction = if (stateRefresh.isRefreshing) 1f else
@@ -80,7 +76,7 @@ fun FamilyScreen(
 
     if (stateRefresh.isRefreshing) {
         LaunchedEffect(true) {
-            viewModel.init()
+            onEvent(FamilyScreenEvent.Refresh)
             stateRefresh.endRefresh()
         }
     }
@@ -92,24 +88,38 @@ fun FamilyScreen(
                     containerColor = MaterialTheme.colorScheme.background
                 ),
                 title = {
-                    Text(
-                        text = "Моя семья",
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_screen_home),
+                            contentDescription = "Task",
+                            modifier = Modifier.size(26.dp)
+                        )
+                        Text(text = "Семья")
+                    }
                 },
                 actions = {
                     IconButton(
                         onClick = {
-                            showBottomSheet.value = true
+                            onEvent(FamilyScreenEvent.OpenBottomSheet(true))
                         },
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_qr_code_scanner_24),
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            contentDescription = null
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_qrcode),
+                            contentDescription = null,
+                            modifier = Modifier.size(26.dp)
                         )
                     }
                 },
+                modifier = Modifier
+                    .clip(
+                        RoundedCornerShape(
+                            bottomEnd = 12.dp,
+                            bottomStart = 12.dp
+                        )
+                    )
             )
         },
         modifier = Modifier
@@ -122,107 +132,134 @@ fun FamilyScreen(
                 )
             }
     ) { innerPadding ->
-        Column(
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            if (initLoadingState != LoadingState.FailedLoad) {
-                LazyColumn(
-                    contentPadding = PaddingValues(10.dp),
-                    state = scrollListState,
-                    modifier = Modifier.fillMaxSize()
+
+        when (state.value.initLoadingState) {
+
+            LoadingState.SuccessfulLoad -> {
+                Column(
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    if (initLoadingState == LoadingState.Loading) {
-                        items(5) {
-                            ShimmerCardFriend(brush = animatedShimmer())
-                        }
-                    } else {
+
+                    val scrollListState = rememberLazyListState()
+
+                    LazyColumn(
+                        contentPadding = PaddingValues(top = 4.dp, bottom = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        state = scrollListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .imePadding()
+                    ) {
                         itemsIndexed(
-                            items = familyList,
+                            items = state.value.familyList,
                             key = { _, familyMember ->
                                 familyMember.id
                             }
                         ) { _, familyMember ->
                             CardFamilyMember(
                                 familyMember = familyMember,
-                                deleteMemberFamily = {
-                                    viewModel.deleteMemberFamily(
-                                        userOneId = familyList[0].id,
-                                        userTwoId = familyMember.id
-                                    )
-                                },
-                                sendPointMemberFamily = { point ->
-                                    viewModel.addUserPoint(
-                                        toUserId = familyMember.id,
-                                        point = point
-                                    )
-                                },
-                                getPointMemberFamily = { point ->
-                                    viewModel.getUserPoint(
-                                        fromUserId = familyMember.id,
-                                        point = point
-                                    )
-                                }
+                                userId = state.value.user?.id ?: "",
+                                onEvent = onEvent,
                             )
                         }
                     }
-                }
-            } else {
-                ErrorView(
-                    refreshFun = {
-                        viewModel.init()
-                    }
-                )
-            }
-        }
-            Box(modifier = Modifier.fillMaxWidth()) {
-                PullToRefreshContainer(
-                    state = stateRefresh,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .graphicsLayer(scaleX = scaleFraction, scaleY = scaleFraction),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.background
-                )
-            }
 
-        if (showBottomSheet.value && initLoadingState != LoadingState.FailedLoad) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet.value = false
-                },
-                sheetState = sheetState,
-                shape = RoundedCornerShape(0)
-            ) {
-                ModalBottomQrCodeSheet(
-                    textId = familyList[0].id,
-                    showBottomSheet = showBottomSheet,
-                    sheetState = sheetState,
-                    viewModel = viewModel
-                )
-            }
-        }
-    }
-    if (loadingState == LoadingState.Loading) {
-        AlertDialog(
-            modifier = Modifier.size(100.dp),
-            onDismissRequest = {},
-            confirmButton = {},
-            text = {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    CircularProgressIndicator(
+                    if (state.value.isOpenBottomSheet) {
+
+                        val sheetState =
+                            rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+                        ModalBottomSheet(
+                            onDismissRequest = {
+                                onEvent(FamilyScreenEvent.OpenBottomSheet(false))
+                            },
+                            containerColor = MaterialTheme.colorScheme.background,
+                            sheetState = sheetState,
+                            shape = RoundedCornerShape(0)
+                        ) {
+                            ModalBottomQrCodeSheet(
+                                textId = state.value.familyList[0].id,
+                                sheetState = sheetState,
+                                onEvent = onEvent,
+                            )
+                        }
+                    }
+
+                    if (state.value.loadingState == LoadingState.Loading) {
+                        AlertDialog(
+                            modifier = Modifier.size(100.dp),
+                            onDismissRequest = {},
+                            confirmButton = {},
+                            text = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .align(Alignment.Center)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    PullToRefreshContainer(
+                        state = stateRefresh,
                         modifier = Modifier
-                            .padding(8.dp)
                             .align(Alignment.Center)
+                            .graphicsLayer(scaleX = scaleFraction, scaleY = scaleFraction),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.background
+                    )
+                }
+
+                if (state.value.isOpenErrorDialog) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            onEvent(FamilyScreenEvent.OpenAndCloseErrorDialog(false))
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                onEvent(FamilyScreenEvent.OpenAndCloseErrorDialog(false))
+                            }) {
+                                Text(text = "Ok")
+                            }
+                        },
+                        text = {
+                            Text(
+                                text = state.value.errorText ?: "",
+                                textAlign = TextAlign.Center,
+                                fontSize = 24.sp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     )
                 }
             }
-        )
+
+            LoadingState.FailedLoad -> {
+                ErrorView(
+                    refreshFun = {
+                        onEvent(FamilyScreenEvent.Refresh)
+                    }
+                )
+            }
+
+            LoadingState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
     }
 }

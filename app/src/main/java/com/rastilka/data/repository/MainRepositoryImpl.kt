@@ -1,18 +1,22 @@
 package com.rastilka.data.repository
 
 import android.net.Uri
+import androidx.core.net.toUri
 import com.rastilka.common.Resource
 import com.rastilka.common.app_data.EditTaskBody
 import com.rastilka.common.app_data.LogInBody
 import com.rastilka.common.app_data.PriceBody
 import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.data.data_source.remote.ApiService
+import com.rastilka.data.mappers.maoToTechnicalSupportMessage
 import com.rastilka.data.mappers.mapToTaskOrWish
 import com.rastilka.data.mappers.mapToTransaction
 import com.rastilka.data.mappers.mapToUser
 import com.rastilka.data.mappers.mapToUserWithCondition
 import com.rastilka.data.utilits.image_upload.ImageUpload
+import com.rastilka.data.utilits.image_upload.NameUploadImage
 import com.rastilka.domain.models.TaskOrWish
+import com.rastilka.domain.models.TechnicalSupportMessage
 import com.rastilka.domain.models.Transaction
 import com.rastilka.domain.models.User
 import com.rastilka.domain.models.UserWithCondition
@@ -86,11 +90,11 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun attachUser(userOneId: String, userTwoId: String): Resource<Unit> {
+    override suspend fun attachUser(userOneId: String, userTwoId: String): Resource<User> {
         return try {
             val response = apiService.attachUser(userOneId, userTwoId)
             if (response.isSuccessful) {
-                Resource.Success(data = null)
+                Resource.Success(data = response.body()?.mapToUser())
             } else {
                 Resource.Error(message = "Данные не получены")
             }
@@ -118,7 +122,7 @@ class MainRepositoryImpl @Inject constructor(
 
     override suspend fun sendPoint(
         toUserId: String,
-        points: Int,
+        points: Long,
         comment: String?
     ): Resource<User> {
         return try {
@@ -143,7 +147,7 @@ class MainRepositoryImpl @Inject constructor(
 
     override suspend fun getPoint(
         fromUserId: String,
-        points: Int,
+        points: Long,
         comment: String?
     ): Resource<User> {
         return try {
@@ -246,6 +250,8 @@ class MainRepositoryImpl @Inject constructor(
         h1: String,
         price: String?,
         picture: Uri?,
+        date: String?,
+        forUserId: String?,
     ): Resource<Unit> {
         return try {
             Resource.Loading<Unit>()
@@ -254,7 +260,12 @@ class MainRepositoryImpl @Inject constructor(
                 lastUrl = lastUrl.toRequestBody(),
                 h1 = h1.toRequestBody(),
                 price = price?.toRequestBody(),
-                picture = upload.createMultipartImage(picture),
+                date = date?.toRequestBody(),
+                forUserId = forUserId?.toRequestBody(),
+                picture = upload.createMultipartImage(
+                    selectedImage = picture,
+                    nameUploadImage = NameUploadImage.picture.name
+                ),
             )
             if (response.isSuccessful) {
                 Resource.Success(data = response.body())
@@ -291,7 +302,7 @@ class MainRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 Resource.Success(data = response.body())
             } else {
-                Resource.Error(message = "Данные не получены")
+                Resource.Error(message = "Что-то пошло не так")
             }
         } catch (e: HttpException) {
             Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
@@ -307,7 +318,7 @@ class MainRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 Resource.Success(data = response.body())
             } else {
-                Resource.Error(message = "Данные не получены")
+                Resource.Error(message = "Что-то пошло не так")
             }
         } catch (e: HttpException) {
             Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
@@ -359,6 +370,73 @@ class MainRepositoryImpl @Inject constructor(
             }
         } catch (e: HttpException) {
             Resource.Error(message = e.localizedMessage ?: "Что-то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
+    }
+
+    override suspend fun editUserAndPassword(
+        name: String,
+        email: String,
+        password: String?,
+        pictureUri: String?
+    ): Resource<User> {
+        return try {
+            val response = apiService.editUserAndPassword(
+                name = name.toRequestBody(),
+                email = email.toRequestBody(),
+                password = password?.toRequestBody(),
+                pictureData = upload.createMultipartImage(
+                    selectedImage = pictureUri?.toUri(),
+                    nameUploadImage = NameUploadImage.pictureData.name
+                )
+            )
+            if (response.isSuccessful) {
+                val result = response.body()?.mapToUser()
+                Resource.Success(data = result)
+            } else {
+                Resource.Error(message = "Что-то пошло не так")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
+    }
+
+    override suspend fun getTickets(): Resource<List<TechnicalSupportMessage>> {
+        return try {
+            val response = apiService.getTickets()
+            if (response.isSuccessful) {
+                val result = response.body()?.map {
+                    it.maoToTechnicalSupportMessage()
+                }
+                Resource.Success(data = result)
+            } else {
+                Resource.Error(message = "Что-то пошло не так")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
+    }
+
+    override suspend fun postTickets(message: String): Resource<List<TechnicalSupportMessage>> {
+        return try {
+            val response = apiService.postTickets(
+                message = message.toRequestBody()
+            )
+            if (response.isSuccessful) {
+                val result = response.body()?.map {
+                    it.maoToTechnicalSupportMessage()
+                }
+                Resource.Success(data = result)
+            } else {
+                Resource.Error(message = "Что-то пошло не так")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
         } catch (e: IOException) {
             Resource.Error(message = "Нет интернета")
         }

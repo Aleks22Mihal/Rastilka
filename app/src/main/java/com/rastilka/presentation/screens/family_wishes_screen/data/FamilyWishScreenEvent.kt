@@ -6,7 +6,6 @@ sealed class FamilyWishScreenEvent {
     data class AddResponsibleUser(
         val productUrl: String,
         val userId: String,
-        val activeUserId: List<String>
     ) : FamilyWishScreenEvent()
 
     data class DeleteWish(
@@ -15,9 +14,17 @@ sealed class FamilyWishScreenEvent {
 
     data class GetPoint(
        val fromUserId: String,
-       val points: Int,
+       val points: Long,
        val comment: String,
        val productUrl: String,
        val assembly: String
+    ) : FamilyWishScreenEvent()
+
+    data class SetPoint(
+        val fromUserId: String,
+        val points: Long,
+        val comment: String,
+        val productUrl: String,
+        val assembly: String
     ) : FamilyWishScreenEvent()
 }

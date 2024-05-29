@@ -2,7 +2,6 @@ package com.rastilka.presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,7 +22,6 @@ fun AppNavHost(
         modifier = Modifier
             .consumeWindowInsets(innerPadding)
             .padding(innerPadding)
-            .imePadding()
     ) {
         navFamilyScreen()
 
@@ -33,7 +31,10 @@ fun AppNavHost(
 
         navScoresScreen()
 
-        navProfileScreen(loginViewModel = loginViewModel)
+        navProfileScreen(
+            loginViewModel = loginViewModel,
+            navController = navController
+        )
 
     }
 }

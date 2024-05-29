@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 @ExperimentalGetImage
 class BarCodeAnalyser(
     private val onBarcodeDetected: (barcodes: List<Barcode>) -> Unit,
-): ImageAnalysis.Analyzer {
+) : ImageAnalysis.Analyzer {
 
     private var lastAnalyzedTimeStamp = 0L
 
@@ -25,18 +25,24 @@ class BarCodeAnalyser(
                     .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
                     .build()
                 val barcodeScanner = BarcodeScanning.getClient(options)
-                val imageToProcess = InputImage.fromMediaImage(imageToAnalyze, image.imageInfo.rotationDegrees)
+                val imageToProcess =
+                    InputImage.fromMediaImage(imageToAnalyze, image.imageInfo.rotationDegrees)
 
                 barcodeScanner.process(imageToProcess)
                     .addOnSuccessListener { barcodes ->
                         if (barcodes.isNotEmpty()) {
                             onBarcodeDetected(barcodes)
+                            image.close()
+                            return@addOnSuccessListener
                         } else {
                             Log.e("BarcodeScannerProgress", "analyze: No barcode Scanned")
                         }
                     }
                     .addOnFailureListener { exception ->
-                        Log.e("BarcodeScannerProgress", "BarcodeAnalyser: Something went wrong $exception")
+                        Log.e(
+                            "BarcodeScannerProgress",
+                            "BarcodeAnalyser: Something went wrong $exception"
+                        )
                     }
                     .addOnCompleteListener {
                         image.close()

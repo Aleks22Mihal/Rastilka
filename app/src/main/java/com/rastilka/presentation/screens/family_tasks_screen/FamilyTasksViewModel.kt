@@ -495,7 +495,7 @@ class FamilyTasksViewModel @Inject constructor(
                 is Resource.Success -> {
                     usersId.forEach { usersId ->
                         when (val resource =
-                            sendPointsUseCase.invoke(usersId, points.toInt(), title)) {
+                            sendPointsUseCase.invoke(usersId, points.toLong(), title)) {
                             is Resource.Error -> {
                                 _state.value = state.value.copy(
                                     loadingState = LoadingState.FailedLoad,
@@ -572,7 +572,7 @@ class FamilyTasksViewModel @Inject constructor(
                 is Resource.Success -> {
                     usersId.forEach { usersId ->
                         when (val resource =
-                            getPointsUseCase.invoke(usersId, points.toInt(), title)) {
+                            getPointsUseCase.invoke(usersId, points.toLong(), title)) {
                             is Resource.Error -> {
                                 _state.value = state.value.copy(
                                     loadingState = LoadingState.FailedLoad,

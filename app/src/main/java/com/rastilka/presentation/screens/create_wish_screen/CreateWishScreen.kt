@@ -1,11 +1,10 @@
 package com.rastilka.presentation.screens.create_wish_screen
 
 import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,7 +65,6 @@ import com.rastilka.R
 import com.rastilka.common.app_data.LoadingState
 import com.rastilka.presentation.screens.create_wish_screen.data.CreateWishEvent
 
-@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CreateWishScreen(
@@ -123,6 +123,7 @@ fun CreateWishScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .padding(innerPadding)
                 .padding(start = 10.dp, end = 10.dp)
                 .verticalScroll(rememberScrollState())
@@ -154,10 +155,16 @@ fun CreateWishScreen(
                     }
                 }
             }
-            OutlinedTextField(
+            Text(
+                text = "Описание",
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+            BasicTextField(
                 value = state.titleText,
-                onValueChange = {
-                    viewModel.onEvent(CreateWishEvent.ChangeTitle(it.take(maxTextTitle)))
+                onValueChange = { text ->
+                    viewModel.onEvent(CreateWishEvent.ChangeTitle(text.take(maxTextTitle)))
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -168,11 +175,17 @@ fun CreateWishScreen(
                 textStyle = LocalTextStyle.current.copy(
                     fontSize = 20.sp
                 ),
-                placeholder = {
-                    Text(
-                        text = "Опишите желание",
-                        color = Color.Unspecified.copy(alpha = 0.5f)
-                    )
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier
+                            .clip(MaterialTheme.shapes.medium)
+                            .heightIn(min = 50.dp)
+                            .background(Color(0xFFF4F5FA))
+                    ) {
+                        Box(modifier = Modifier.padding(10.dp)) {
+                            innerTextField()
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )

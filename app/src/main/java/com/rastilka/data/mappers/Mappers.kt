@@ -6,6 +6,7 @@ import com.rastilka.data.models.TaskOrWishDTO
 import com.rastilka.data.models.TaskOrWishFloatDTO
 import com.rastilka.data.models.TaskOrWishUuidDTO
 import com.rastilka.data.models.TaskOrWishValueDTO
+import com.rastilka.data.models.TechnicalSupportMessageDTO
 import com.rastilka.data.models.TransactionDTO
 import com.rastilka.data.models.UserDTO
 import com.rastilka.data.models.UserWithConditionDTO
@@ -15,6 +16,7 @@ import com.rastilka.domain.models.TaskOrWishArray
 import com.rastilka.domain.models.TaskOrWishFloat
 import com.rastilka.domain.models.TaskOrWishUuid
 import com.rastilka.domain.models.TaskOrWishValue
+import com.rastilka.domain.models.TechnicalSupportMessage
 import com.rastilka.domain.models.Transaction
 import com.rastilka.domain.models.User
 import com.rastilka.domain.models.UserWithCondition
@@ -113,3 +115,11 @@ fun TaskOrWishDTO.mapToTaskOrWish(): TaskOrWish = TaskOrWish(
     uuid = uuid.mapToTaskOrWishUuid(),
     float = float.mapToTaskOrWishFloat()
 )
+
+fun TechnicalSupportMessageDTO.maoToTechnicalSupportMessage(): TechnicalSupportMessage =
+    TechnicalSupportMessage(
+        message = message,
+        time = time,
+        name = name,
+        picture = picture
+    )

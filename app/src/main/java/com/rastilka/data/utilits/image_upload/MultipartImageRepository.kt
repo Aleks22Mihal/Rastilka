@@ -4,6 +4,5 @@ import android.net.Uri
 import okhttp3.MultipartBody
 
 interface MultipartImageRepository {
-
-    fun createMultipartImage(selectedImage: Uri?): MultipartBody.Part?
+    fun createMultipartImage(selectedImage: Uri?, nameUploadImage: String): MultipartBody.Part?
 }

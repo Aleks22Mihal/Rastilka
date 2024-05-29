@@ -1,13 +1,15 @@
 package com.rastilka.presentation.navigation.bottom_navigation_bar
 
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -29,16 +31,16 @@ fun BottomNavigationBar(navController: NavController) {
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.height(90.dp)
     ){
         navigationButtons.forEach { navigationButtons ->
             NavigationBarItem(
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = Color.Black
+                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                 ),
                 icon = {
-                    Icon(
+                    Image(
                         painter = painterResource(id = navigationButtons.icon),
                         contentDescription = navigationButtons.route
                     )

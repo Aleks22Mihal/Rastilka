@@ -21,7 +21,7 @@ import com.rastilka.presentation.components_app.shimmer_brush.animatedShimmer
 fun ImageLoadCoil(
     model: String,
     modifier: Modifier,
-    contentScale: ContentScale = ContentScale.Fit,
+    contentScale: ContentScale = ContentScale.Crop,
     contentDescription: String?
 ) {
     SubcomposeAsyncImage(
@@ -30,7 +30,7 @@ fun ImageLoadCoil(
             .data("${BuildConfig.SERVER_URL}${model}")
             .crossfade(true)
             .networkCachePolicy(CachePolicy.ENABLED)
-            .diskCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.DISABLED)
             .memoryCachePolicy(CachePolicy.ENABLED)
             .build(),
         filterQuality = FilterQuality.High,

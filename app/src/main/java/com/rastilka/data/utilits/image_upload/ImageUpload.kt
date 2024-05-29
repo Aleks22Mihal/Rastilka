@@ -20,7 +20,7 @@ class ImageUpload @Inject constructor(
     @ApplicationContext private val appContext: Context
 ): MultipartImageRepository {
 
-    override fun createMultipartImage(selectedImage: Uri?): MultipartBody.Part? {
+    override fun createMultipartImage(selectedImage: Uri?, nameUploadImage: String): MultipartBody.Part? {
         return if (selectedImage != null) {
             val imageBitmap: Bitmap? = if (Build.VERSION.SDK_INT < 28) {
                 MediaStore.Images.Media.getBitmap(appContext.contentResolver, selectedImage)
@@ -29,9 +29,9 @@ class ImageUpload @Inject constructor(
                 ImageDecoder.decodeBitmap(source)
             }
             val bitmapArrayOutput = ByteArrayOutputStream()
-            imageBitmap?.compress(Bitmap.CompressFormat.PNG, 100, bitmapArrayOutput)
+            imageBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, bitmapArrayOutput)
             val bitmapData: ByteArray = bitmapArrayOutput.toByteArray()
-            val file = File(appContext.cacheDir, "image.png")
+            val file = File(appContext.cacheDir, "image.jpeg")
             file.createNewFile()
             file.outputStream().use { outputStream ->
                 outputStream.write(bitmapData)
@@ -42,7 +42,7 @@ class ImageUpload @Inject constructor(
                 appContext.contentResolver.getType(selectedImage)?.toMediaTypeOrNull()
             )
             MultipartBody.Part.createFormData(
-                "picture",
+                nameUploadImage,
                 file.name,
                 requestFile
             )
@@ -50,5 +50,4 @@ class ImageUpload @Inject constructor(
             null
         }
     }
-
 }

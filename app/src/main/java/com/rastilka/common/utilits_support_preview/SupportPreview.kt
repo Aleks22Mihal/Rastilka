@@ -72,7 +72,7 @@ object SupportPreview {
     val transaction = Transaction(
         status = "done",
         id = "2549AAC4-A0E5-4DC8-BFFF-EB632A2CE46E",
-        comment = "get",
+        comment = "1438938CEC277184AF5A48EBBE1EAE4F9191438938CEC277184AF5A48EBBE1EAE4F9191438938CEC277184AF5A48EBBE1EAE4F9191438938CEC277184AF5A48EBBE1EAE4F919",
         transaction = -25,
         date = "2024-01-03T17:39:53Z",
         recipeName = "Леша тест",
@@ -91,7 +91,7 @@ object SupportPreview {
             rowId = "655B35F6-5D7F-416E-9DF7-D55F089E9950",
             date = "2023-12-26 20:20",
             url = "product82",
-            h1 = "Обучение брата брата брата брата брата брата брата брата",
+            h1 = "Обучение брата",
             isActive = "500137",
             parentId = "C10FEE3D-AA0B-42C3-AAEA-C1186A39AE14",
             price = "10",
@@ -123,4 +123,42 @@ object SupportPreview {
             salePrice = 1f
         )
     )
+    val task2 = TaskOrWish(
+        value = TaskOrWishValue(
+            rowId = "655B35F6-5D7F-416E-9DF7-D55F089E9950",
+            date = "2023-12-26 20:20",
+            url = "product82",
+            h1 = "Тут должен быть очень длинный текст и он очень длинный",
+            isActive = "500137",
+            parentId = "C10FEE3D-AA0B-42C3-AAEA-C1186A39AE14",
+            price = "10",
+            salePrice = "1",
+            assembly = "1",
+            id = "D58C18F0-6AD1-4B47-8B88-90235E2055F",
+            photo = null,
+            typeId = TypeId.task,
+            description = "D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\"D58C18F0-6AD1-4B47-8B88-9023D5E2055F\""
+        ),
+        array = TaskOrWishArray(
+            optionalImages = listOf(
+                "/img/product/1438938CEC277184AF5A48EBBE1EAE4F919.err"
+            ),
+            parentId = listOf(
+                "C10FEE3D-AA0B-42C3-AAEA-C1186A39AE14"
+            )
+        ),
+        uuid = TaskOrWishUuid(
+            forUsers = listOf(
+                "C080D0CE-5114-46DC-ABF0-5BAAD5CB4A45",
+            ),
+            didUsers = listOf(
+                "C080D0CE-5114-46DC-ABF0-5BAAD5CB4A45",
+            )
+        ),
+        float = TaskOrWishFloat(
+            price = 10f,
+            salePrice = 1f
+        )
+    )
+    val listTask = listOf(task, task2)
 }

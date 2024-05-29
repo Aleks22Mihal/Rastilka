@@ -11,5 +11,7 @@ class CreateTaskOrWishUseCase @Inject constructor(private val mainRepository: Ma
         h1: String,
         price: String? = null,
         picture: Uri?,
-    ) = mainRepository.createTaskOrWish(typeId, lastUrl, h1, price, picture)
+        date: String? = null,
+        forUserId: String? = null
+    ) = mainRepository.createTaskOrWish(typeId, lastUrl, h1, price, picture, date, forUserId)
 }

@@ -2,6 +2,8 @@ package com.rastilka.presentation.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -10,6 +12,7 @@ import com.rastilka.presentation.navigation.navigation_models.AppNavGraph
 import com.rastilka.presentation.navigation.navigation_models.NavigationScreens
 import com.rastilka.presentation.screens.create_wish_screen.CreateWishScreen
 import com.rastilka.presentation.screens.family_wishes_screen.FamilyWishesScreen
+import com.rastilka.presentation.screens.family_wishes_screen.FamilyWishesViewModel
 
 fun NavGraphBuilder.navWishesScreen(navController: NavHostController) {
     navigation(
@@ -17,7 +20,14 @@ fun NavGraphBuilder.navWishesScreen(navController: NavHostController) {
         startDestination = NavigationScreens.WishScreen.rout,
     ) {
         composable(route = NavigationScreens.WishScreen.rout) {
-            FamilyWishesScreen(navController = navController)
+
+            val viewModel = hiltViewModel<FamilyWishesViewModel>()
+
+            FamilyWishesScreen(
+                state = viewModel.state.collectAsState(),
+                onEvent = viewModel::onEvent,
+                navController = navController
+            )
         }
         composable(
             route = NavigationScreens.CreateWishScreen.rout,

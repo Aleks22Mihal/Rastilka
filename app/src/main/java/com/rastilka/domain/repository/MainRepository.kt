@@ -5,6 +5,7 @@ import com.rastilka.common.Resource
 import com.rastilka.common.app_data.LogInBody
 import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.domain.models.TaskOrWish
+import com.rastilka.domain.models.TechnicalSupportMessage
 import com.rastilka.domain.models.Transaction
 import com.rastilka.domain.models.User
 import com.rastilka.domain.models.UserWithCondition
@@ -22,13 +23,13 @@ interface MainRepository {
 
     suspend fun getFamilyList(): Resource<List<User>>
 
-    suspend fun attachUser(userOneId: String, userTwoId: String): Resource<Unit>
+    suspend fun attachUser(userOneId: String, userTwoId: String): Resource<User>
 
     suspend fun detachUser(userOneId: String, userTwoId: String): Resource<Unit>
 
-    suspend fun sendPoint(toUserId: String, points: Int, comment: String?): Resource<User>
+    suspend fun sendPoint(toUserId: String, points: Long, comment: String?): Resource<User>
 
-    suspend fun getPoint(fromUserId: String, points: Int, comment: String?): Resource<User>
+    suspend fun getPoint(fromUserId: String, points: Long, comment: String?): Resource<User>
 
     suspend fun getTransaction(): Resource<List<Transaction>>
 
@@ -44,6 +45,8 @@ interface MainRepository {
         h1: String,
         price: String?,
         picture: Uri?,
+        date: String?,
+        forUserId: String?,
     ): Resource<Unit>
 
     suspend fun deleteTaskOrWish(productUrl: String): Resource<Unit>
@@ -59,4 +62,14 @@ interface MainRepository {
         urlFrom: String,
         urlTo: String,
     ): Resource<Unit>
+
+    suspend fun editUserAndPassword(
+        name: String,
+        email: String,
+        password: String?,
+        pictureUri: String?
+    ): Resource<User>
+
+    suspend fun getTickets(): Resource<List<TechnicalSupportMessage>>
+    suspend fun postTickets(message: String): Resource<List<TechnicalSupportMessage>>
 }

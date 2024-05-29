@@ -10,6 +10,7 @@ import com.rastilka.domain.use_case.EditTaskOrWishUseCase
 import com.rastilka.domain.use_case.GetFamilyMembersUseCase
 import com.rastilka.domain.use_case.GetPointsUseCase
 import com.rastilka.domain.use_case.GetTasksOrWishesUseCase
+import com.rastilka.domain.use_case.SendPointsUseCase
 import com.rastilka.domain.use_case.SetResponsibleUser
 import com.rastilka.presentation.screens.family_wishes_screen.data.FamilyWishScreenEvent
 import com.rastilka.presentation.screens.family_wishes_screen.data.FamilyWishScreenState
@@ -25,8 +26,9 @@ class FamilyWishesViewModel @Inject constructor(
     private val getWishesUseCase: GetTasksOrWishesUseCase,
     private val addResponsibleUser: SetResponsibleUser,
     private val deleteWish: DeleteTaskOrWishUseCase,
-    private val editTaskUseCase: EditTaskOrWishUseCase,
-    private val getPointsUseCase: GetPointsUseCase
+    private val editWishUseCase: EditTaskOrWishUseCase,
+    private val getPointsUseCase: GetPointsUseCase,
+    private val setPointsUseCase: SendPointsUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FamilyWishScreenState())
@@ -43,7 +45,7 @@ class FamilyWishesViewModel @Inject constructor(
             }
 
             is FamilyWishScreenEvent.AddResponsibleUser -> {
-                setResponsibleUser(event.productUrl, event.userId, event.activeUserId)
+                setResponsibleUser(event.productUrl, event.userId)
             }
 
             is FamilyWishScreenEvent.DeleteWish -> {
@@ -51,7 +53,24 @@ class FamilyWishesViewModel @Inject constructor(
             }
 
             is FamilyWishScreenEvent.GetPoint -> {
-                getPoints(event.fromUserId, event.points, event.comment, event.productUrl, event.assembly)
+                getPoints(
+                    fromUserId = event.fromUserId,
+                    points = event.points,
+                    comment = event.comment,
+                    productUrl = event.productUrl,
+                    assembly = event.assembly
+                )
+
+            }
+
+            is FamilyWishScreenEvent.SetPoint -> {
+                setPoints(
+                    fromUserId = event.fromUserId,
+                    points = event.points,
+                    comment = event.comment,
+                    productUrl = event.productUrl,
+                    assembly = event.assembly
+                )
             }
         }
     }
@@ -100,24 +119,32 @@ class FamilyWishesViewModel @Inject constructor(
                     }
                 }
             }
-
         }
     }
 
-    private fun setResponsibleUser(productUrl: String, userId: String, activeUserId: List<String>) {
+    private fun setResponsibleUser(
+        productUrl: String,
+        userId: String,
+    ) {
+
+        _state.value = state.value.copy(
+            loadingState = LoadingState.Loading
+        )
+
         viewModelScope.launch {
-            _state.value = state.value.copy(
-                loadingState = LoadingState.Loading
-            )
-            if (userId !in activeUserId) {
-                activeUserId.forEach { activeUserId ->
-                    when (val resource = addResponsibleUser.invoke(productUrl, activeUserId)) {
+            val wish = state.value.wishList.find { wishes ->
+                productUrl in wishes.value.url
+            }
+
+            if (wish != null) {
+                if (wish.uuid.forUsers.isEmpty()){
+                    when (val resource =
+                        addResponsibleUser(productUrl, userId)) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
                                 errorMessage = resource.message ?: ""
                             )
-                            return@forEach
                         }
 
                         is Resource.Loading -> {
@@ -126,44 +153,133 @@ class FamilyWishesViewModel @Inject constructor(
                             )
                         }
 
-                        is Resource.Success -> {}
-                    }
-                }
-            }
-            when (val resource = addResponsibleUser.invoke(productUrl, userId)) {
-                is Resource.Error -> {
-                    _state.value = state.value.copy(
-                        loadingState = LoadingState.FailedLoad,
-                        errorMessage = resource.message ?: ""
-                    )
-                }
-
-                is Resource.Loading -> {
-                    _state.value = state.value.copy(
-                        loadingState = LoadingState.Loading
-                    )
-                }
-
-                is Resource.Success -> {
-                    when (val resourceListTasks =
-                        getWishesUseCase.invoke(type = TypeIdForApi.wishes)) {
                         is Resource.Success -> {
+                            when (
+                                val resourceListWishes =
+                                    getWishesUseCase(type = TypeIdForApi.wishes)
+                            ) {
+                                is Resource.Success -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.SuccessfulLoad,
+                                        wishList = resourceListWishes.data ?: emptyList()
+                                    )
+                                }
+
+                                is Resource.Loading -> {
+                                    _state.value = state.value.copy(
+                                        initLoadingState = LoadingState.Loading,
+                                    )
+                                }
+
+                                is Resource.Error -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.FailedLoad,
+                                    )
+                                }
+                            }
+
+                        }
+                    }
+                } else if (wish.uuid.forUsers.size == 1 && userId in wish.uuid.forUsers) {
+                    when (val resource =
+                        addResponsibleUser(productUrl, wish.uuid.forUsers.first())) {
+                        is Resource.Error -> {
                             _state.value = state.value.copy(
-                                loadingState = LoadingState.SuccessfulLoad,
-                                wishList = resourceListTasks.data ?: emptyList()
+                                loadingState = LoadingState.FailedLoad,
+                                errorMessage = resource.message ?: ""
                             )
                         }
 
                         is Resource.Loading -> {
                             _state.value = state.value.copy(
-                                initLoadingState = LoadingState.Loading,
+                                loadingState = LoadingState.Loading
                             )
                         }
 
-                        is Resource.Error -> {
-                            _state.value = state.value.copy(
-                                loadingState = LoadingState.FailedLoad,
-                            )
+                        is Resource.Success -> {
+                            when (
+                                val resourceListWishes =
+                                    getWishesUseCase(type = TypeIdForApi.wishes)
+                            ) {
+                                is Resource.Success -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.SuccessfulLoad,
+                                        wishList = resourceListWishes.data ?: emptyList()
+                                    )
+                                }
+
+                                is Resource.Loading -> {
+                                    _state.value = state.value.copy(
+                                        initLoadingState = LoadingState.Loading,
+                                    )
+                                }
+
+                                is Resource.Error -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.FailedLoad,
+                                    )
+                                }
+                            }
+
+                        }
+                    }
+                } else {
+                    wish.uuid.forUsers.forEach { wishesUserId ->
+                        when (val resource = addResponsibleUser(productUrl, wishesUserId)) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resource.message ?: ""
+                                )
+                                return@forEach
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.Loading
+                                )
+                            }
+
+                            is Resource.Success -> {}
+                        }
+                    }.also {
+                        when (val resourceAdd = addResponsibleUser(productUrl, userId)) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resourceAdd.message ?: ""
+                                )
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.Loading
+                                )
+                            }
+
+                            is Resource.Success -> {
+                                when (val resourceListWishes =
+                                    getWishesUseCase(type = TypeIdForApi.wishes)) {
+                                    is Resource.Success -> {
+                                        _state.value = state.value.copy(
+                                            loadingState = LoadingState.SuccessfulLoad,
+                                            wishList = resourceListWishes.data ?: emptyList()
+                                        )
+                                    }
+
+                                    is Resource.Loading -> {
+                                        _state.value = state.value.copy(
+                                            initLoadingState = LoadingState.Loading,
+                                        )
+                                    }
+
+                                    is Resource.Error -> {
+                                        _state.value = state.value.copy(
+                                            loadingState = LoadingState.FailedLoad,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -171,14 +287,88 @@ class FamilyWishesViewModel @Inject constructor(
         }
     }
 
-    private fun getPoints(fromUserId: String, points: Int, comment: String, productUrl: String, assembly: String) {
+
+    /*    private fun setResponsibleUser(productUrl: String, userId: String, activeUserId: List<String>) {
+            viewModelScope.launch {
+                _state.value = state.value.copy(
+                    loadingState = LoadingState.Loading
+                )
+                if (userId !in activeUserId) {
+                    activeUserId.forEach { activeUserId ->
+                        when (val resource = addResponsibleUser.invoke(productUrl, activeUserId)) {
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                    errorMessage = resource.message ?: ""
+                                )
+                                return@forEach
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.Loading
+                                )
+                            }
+
+                            is Resource.Success -> {}
+                        }
+                    }
+                }
+                when (val resource = addResponsibleUser.invoke(productUrl, userId)) {
+                    is Resource.Error -> {
+                        _state.value = state.value.copy(
+                            loadingState = LoadingState.FailedLoad,
+                            errorMessage = resource.message ?: ""
+                        )
+                    }
+
+                    is Resource.Loading -> {
+                        _state.value = state.value.copy(
+                            loadingState = LoadingState.Loading
+                        )
+                    }
+
+                    is Resource.Success -> {
+                        when (val resourceListTasks =
+                            getWishesUseCase.invoke(type = TypeIdForApi.wishes)) {
+                            is Resource.Success -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.SuccessfulLoad,
+                                    wishList = resourceListTasks.data ?: emptyList()
+                                )
+                            }
+
+                            is Resource.Loading -> {
+                                _state.value = state.value.copy(
+                                    initLoadingState = LoadingState.Loading,
+                                )
+                            }
+
+                            is Resource.Error -> {
+                                _state.value = state.value.copy(
+                                    loadingState = LoadingState.FailedLoad,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }*/
+
+    private fun getPoints(
+        fromUserId: String,
+        points: Long,
+        comment: String,
+        productUrl: String,
+        assembly: String
+    ) {
         _state.value = state.value.copy(
             loadingState = LoadingState.Loading
         )
         viewModelScope.launch {
             when (val resourceGetPoints =
-                getPointsUseCase.invoke(
-                    fromUserId = fromUserId,
+                setPointsUseCase(
+                    toUserId = fromUserId,
                     points = points,
                     comment = comment
                 )) {
@@ -196,7 +386,7 @@ class FamilyWishesViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    when (val resourceEditSalePointsWish = editTaskUseCase.invoke(
+                    when (val resourceEditSalePointsWish = editWishUseCase(
                         productUrl = productUrl,
                         property = "salePrice",
                         value = points.toString()
@@ -215,8 +405,8 @@ class FamilyWishesViewModel @Inject constructor(
                         }
 
                         is Resource.Success -> {
-                            val sum = assembly.toInt() + points
-                            when (val resourceEditAssemblyWish = editTaskUseCase.invoke(
+                            val sum = assembly.toLong() - points
+                            when (val resourceEditAssemblyWish = editWishUseCase(
                                 productUrl = productUrl,
                                 property = "assembly",
                                 value = sum.toString()
@@ -236,24 +426,153 @@ class FamilyWishesViewModel @Inject constructor(
 
                                 is Resource.Success -> {
                                     when (val resourceListWishes =
-                                        getWishesUseCase.invoke(type = TypeIdForApi.wishes)) {
+                                        getWishesUseCase(type = TypeIdForApi.wishes)) {
                                         is Resource.Success -> {
-                                            when(val resourceListFamily = getFamilyMembers.invoke()){
-                                                is Resource.Error ->{
+                                            when (val resourceListFamily = getFamilyMembers()) {
+                                                is Resource.Error -> {
                                                     _state.value = state.value.copy(
                                                         loadingState = LoadingState.FailedLoad,
-                                                        errorMessage = resourceListFamily.message ?: ""
+                                                        errorMessage = resourceListFamily.message
+                                                            ?: ""
                                                     )
                                                 }
+
                                                 is Resource.Loading -> {
                                                     _state.value = state.value.copy(
                                                         loadingState = LoadingState.Loading,
                                                     )
                                                 }
+
                                                 is Resource.Success -> {
                                                     _state.value = state.value.copy(
-                                                        familyMembers = resourceListFamily.data ?: emptyList(),
-                                                        wishList = resourceListWishes.data ?: emptyList(),
+                                                        familyMembers = resourceListFamily.data
+                                                            ?: emptyList(),
+                                                        wishList = resourceListWishes.data
+                                                            ?: emptyList(),
+                                                        loadingState = LoadingState.SuccessfulLoad
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        is Resource.Loading -> {
+                                            _state.value = state.value.copy(
+                                                loadingState = LoadingState.Loading,
+                                            )
+                                        }
+
+                                        is Resource.Error -> {
+                                            _state.value = state.value.copy(
+                                                loadingState = LoadingState.FailedLoad,
+                                                errorMessage = resourceListWishes.message ?: ""
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setPoints(
+        fromUserId: String,
+        points: Long,
+        comment: String,
+        productUrl: String,
+        assembly: String
+    ) {
+        _state.value = state.value.copy(
+            loadingState = LoadingState.Loading
+        )
+        viewModelScope.launch {
+            when (val resourceSetPoints =
+                getPointsUseCase(
+                    fromUserId = fromUserId,
+                    points = points,
+                    comment = comment,
+                )
+            ) {
+                is Resource.Error -> {
+                    _state.value = state.value.copy(
+                        loadingState = LoadingState.FailedLoad,
+                        errorMessage = resourceSetPoints.message ?: ""
+                    )
+                }
+
+                is Resource.Loading -> {
+                    _state.value = state.value.copy(
+                        loadingState = LoadingState.Loading
+                    )
+                }
+
+                is Resource.Success -> {
+                    when (val resourceEditSalePointsWish = editWishUseCase(
+                        productUrl = productUrl,
+                        property = "salePrice",
+                        value = points.toString()
+                    )) {
+                        is Resource.Error -> {
+                            _state.value = state.value.copy(
+                                loadingState = LoadingState.FailedLoad,
+                                errorMessage = resourceEditSalePointsWish.message ?: ""
+                            )
+                        }
+
+                        is Resource.Loading -> {
+                            _state.value = state.value.copy(
+                                loadingState = LoadingState.Loading
+                            )
+                        }
+
+                        is Resource.Success -> {
+                            val sum = assembly.toLong() + points
+                            when (val resourceEditAssemblyWish = editWishUseCase(
+                                productUrl = productUrl,
+                                property = "assembly",
+                                value = sum.toString()
+                            )) {
+                                is Resource.Error -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.FailedLoad,
+                                        errorMessage = resourceEditAssemblyWish.message ?: ""
+                                    )
+                                }
+
+                                is Resource.Loading -> {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.Loading
+                                    )
+                                }
+
+                                is Resource.Success -> {
+                                    when (val resourceListWishes =
+                                        getWishesUseCase(type = TypeIdForApi.wishes)) {
+                                        is Resource.Success -> {
+                                            when (val resourceListFamily =
+                                                getFamilyMembers.invoke()) {
+                                                is Resource.Error -> {
+                                                    _state.value = state.value.copy(
+                                                        loadingState = LoadingState.FailedLoad,
+                                                        errorMessage = resourceListFamily.message
+                                                            ?: ""
+                                                    )
+                                                }
+
+                                                is Resource.Loading -> {
+                                                    _state.value = state.value.copy(
+                                                        loadingState = LoadingState.Loading,
+                                                    )
+                                                }
+
+                                                is Resource.Success -> {
+                                                    _state.value = state.value.copy(
+                                                        familyMembers = resourceListFamily.data
+                                                            ?: emptyList(),
+                                                        wishList = resourceListWishes.data
+                                                            ?: emptyList(),
                                                         loadingState = LoadingState.SuccessfulLoad
                                                     )
                                                 }
@@ -302,12 +621,12 @@ class FamilyWishesViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    when (val resourceListTasks =
+                    when (val resourceListWishes =
                         getWishesUseCase.invoke(type = TypeIdForApi.wishes)) {
                         is Resource.Success -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.SuccessfulLoad,
-                                wishList = resourceListTasks.data ?: emptyList()
+                                wishList = resourceListWishes.data ?: emptyList()
                             )
                         }
 

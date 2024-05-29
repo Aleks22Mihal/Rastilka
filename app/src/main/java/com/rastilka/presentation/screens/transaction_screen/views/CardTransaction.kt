@@ -1,24 +1,27 @@
 package com.rastilka.presentation.screens.transaction_screen.views
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,9 +32,10 @@ import androidx.compose.ui.unit.sp
 import com.rastilka.R
 import com.rastilka.common.utilits_support_preview.SupportPreview
 import com.rastilka.domain.models.Transaction
-import com.rastilka.presentation.components_app.coil_image_view.ImageLoadCoil
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 
 @Composable
@@ -39,84 +43,75 @@ fun CardTransaction(transaction: Transaction) {
 
 
     val actual = OffsetDateTime.parse(transaction.date, DateTimeFormatter.ISO_DATE_TIME)
-    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
+    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm", Locale.getDefault())
     val formatDateTime = actual.format(formatter)
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+    Card(
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background
+        ),
         modifier = Modifier
+            .height(85.dp)
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(10.dp)
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            ImageLoadCoil(
-                model = transaction.recipeTransaction?.picture.toString(),
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(RoundedCornerShape(100))
-                    .background(Color.White),
-                contentDescription = "",
-                contentScale = ContentScale.Crop
-            )
-            Text(
-                text = transaction.recipeTransaction?.name.toString(),
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (transaction.transaction > 0) {
-                            R.drawable.ic_arrow_back_24
-                        } else R.drawable.ic_arrow_forward_24
-                    ),
-                    contentDescription = null,
-                )
 
+            CardUserTransaction(
+                name = transaction.authTransaction?.name ?: "",
+                pictureUrl = transaction.authTransaction?.picture ?: ""
+            )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = transaction.comment.toString(),
+                        maxLines = 2,
+                        fontSize = 16.sp,
+                        lineHeight = 21.sp,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = transaction.transactionString ?: "",
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        fontSize = 16.sp,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_rastilka),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Text(
+                    text = formatDateTime,
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
-            Text(text = transaction.transactionString.toString(), fontWeight = FontWeight.Bold)
-            Text(
-                text = transaction.comment.toString(),
-                fontWeight = FontWeight.Light,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.width(150.dp)
-            )
-            Text(text = formatDateTime, textAlign = TextAlign.Center, fontSize = 14.sp, color = Color.Blue)
-        }
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            ImageLoadCoil(
-                model = transaction.authTransaction?.picture.toString(),
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(RoundedCornerShape(100))
-                    .background(Color.White),
-                contentDescription = "",
-                contentScale = ContentScale.Crop
-            )
-            Text(
-                text = transaction.authTransaction?.name.toString(),
-                fontWeight = FontWeight.Bold,
+            CardUserTransaction(
+                name = transaction.recipeTransaction?.name ?: "",
+                pictureUrl = transaction.recipeTransaction?.picture ?: ""
             )
         }
     }
-    HorizontalDivider()
 }
 
 @Preview

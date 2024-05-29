@@ -20,9 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
--keep,allowobfuscation,allowshrinking interface retrofit2.Call
--keep,allowobfuscation,allowshrinking class retrofit2.Response
--keep,allowobfuscation,allowshrinking class com.squareup.** { *; }
--keep,allowobfuscation,allowshrinking class com.squareup.moshi.** { *; }
--keep public class com.rastilka.domain.models.** {*;}
+-optimizationpasses 5
+
+-keep public class com.rastilka.data.models.** {*;}
+-keep public class com.rastilka.common.app_data.** {*;}

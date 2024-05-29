@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,10 +48,10 @@ fun FamilyMemberView(
             ImageLoadCoil(
                 model = familyMember.picture.toString(),
                 modifier = Modifier
-                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clip(CircleShape)
                     .border(
-                        width = 4.dp,
-                        shape = MaterialTheme.shapes.extraLarge,
+                        width = 2.dp,
+                        shape = CircleShape,
                         color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
                     )
                     .size(size)

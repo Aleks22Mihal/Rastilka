@@ -3,39 +3,39 @@ package com.rastilka.presentation.screens.family_tasks_screen.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -47,10 +47,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,28 +64,27 @@ import com.rastilka.common.utilits_support_preview.SupportPreview
 import com.rastilka.domain.models.TaskOrWish
 import com.rastilka.domain.models.TaskOrWishValue
 import com.rastilka.domain.models.User
+import com.rastilka.presentation.components_app.clean_focus_keyboard.clearFocusOnKeyboardDismiss
 import com.rastilka.presentation.components_app.coil_image_view.ImageLoadCoil
 import com.rastilka.presentation.screens.family_tasks_screen.data.FamilyTasksScreenEvent
 import com.rastilka.presentation.ui.theme.RastilkaTheme
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardTaskView(
     task: TaskOrWish,
     familyMembers: List<User>,
+    userId: String,
+    isVisibleDescription: MutableState<Boolean> = remember { mutableStateOf(false) },
     modifier: Modifier,
     onEvent: (FamilyTasksScreenEvent) -> Unit,
-    datePikerState: DatePickerState,
-    selectedTaskForChangeDateUrl: MutableState<String>,
+    selectedTaskForChangeDateUrl: MutableState<Pair<String, Long>>,
 ) {
-
-    var isVisibleDescription by remember {
-        mutableStateOf(false)
-    }
+    
     var title by remember {
         mutableStateOf(task.value.h1)
     }
@@ -102,6 +101,14 @@ fun CardTaskView(
             } else false
         }
     )
+
+    val apiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    val resultDate = LocalDateTime.parse(task.value.date, apiFormat)
+    val format = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+
+    val date = if (resultDate > LocalDateTime.now()) {
+        resultDate.format(format)
+    } else LocalDateTime.now().format(format)
 
     SwipeToDismissBox(
         state = dismissState,
@@ -127,6 +134,7 @@ fun CardTaskView(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .clip(MaterialTheme.shapes.large)
                     .background(color = color),
                 contentAlignment = Alignment.CenterEnd
             ) {
@@ -141,15 +149,15 @@ fun CardTaskView(
         },
     ) {
         Card(
-            shape = RoundedCornerShape(0.dp),
+            shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
             ),
             modifier = modifier
                 .fillMaxWidth()
                 .clickable {
-                    isVisibleDescription = !isVisibleDescription
-                    if (!isVisibleDescription) {
+                    isVisibleDescription.value = !isVisibleDescription.value
+                    if (!isVisibleDescription.value) {
                         title = task.value.h1
                     }
                 },
@@ -165,20 +173,35 @@ fun CardTaskView(
                     DidResponsibleUserTaskView(
                         task = task,
                         familyMembers = familyMembers,
-                        onEvent = onEvent
+                        onEvent = onEvent,
+                        userId = userId,
                     )
-                    AnimatedVisibility(visible = !isVisibleDescription) {
-                        Text(
-                            text = task.value.h1,
-                            fontSize = 14.sp,
-                            maxLines = 1,
-                            fontWeight = FontWeight.Bold,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth(0.8f)
-                        )
+                    AnimatedVisibility(visible = !isVisibleDescription.value) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .padding(start = 5.dp)
+                        ) {
+                            Text(
+                                text = task.value.h1,
+                                fontSize = 16.sp,
+                                lineHeight = 21.sp,
+                                fontWeight = FontWeight(400),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = date,
+                                fontSize = 9.sp,
+                                lineHeight = 12.sp,
+                                maxLines = 1,
+                                fontWeight = FontWeight.Light,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    if (isVisibleDescription) {
+                    if (isVisibleDescription.value) {
                         Text(
                             text = "Готово",
                             color = MaterialTheme.colorScheme.primary,
@@ -195,8 +218,8 @@ fun CardTaskView(
                                             )
                                         )
                                     } else {
-                                        isVisibleDescription = !isVisibleDescription
-                                        if (!isVisibleDescription) {
+                                        isVisibleDescription.value = !isVisibleDescription.value
+                                        if (!isVisibleDescription.value) {
                                             title = task.value.h1
                                         }
                                     }
@@ -205,52 +228,72 @@ fun CardTaskView(
                     }
                 }
 
-                AnimatedVisibility(visible = isVisibleDescription) {
+                AnimatedVisibility(visible = isVisibleDescription.value) {
                     Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        OutlinedTextField(
+                        BasicTextField(
                             value = title,
                             onValueChange = {
                                 title = it
                             },
-                            textStyle = TextStyle(fontSize = 14.sp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 10.dp, bottom = 10.dp)
+                                .padding(top = 4.dp),
+                            decorationBox = { innerTextField ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .heightIn(min = 40.dp)
+                                        .padding(start = 4.dp, end = 4.dp)
+                                        .background(Color(0xFFF4F5FA))
+                                ) {
+                                    Box(modifier = Modifier.padding(10.dp)) {
+                                        Column {
+                                            innerTextField()
+                                            if (task.value.photo != null) {
+                                                Box(
+                                                    contentAlignment = Alignment.Center,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(top = 4.dp),
+                                                ) {
+                                                    ImageLoadCoil(
+                                                        model = task.value.photo,
+                                                        modifier = Modifier.size(150.dp),
+                                                        contentDescription = ""
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         )
-                        if (task.value.photo != null) {
-                            ImageLoadCoil(
-                                model = task.value.photo,
-                                modifier = Modifier.size(200.dp),
-                                contentDescription = ""
-                            )
-                        }
-                        if (!task.value.date.isNullOrBlank()) {
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                        if (!task.value.date.isNullOrBlank()) {
                             DateTaskView(
                                 task = task.value,
-                                datePikerState = datePikerState,
+                                date = date,
+                                resultDate = resultDate,
                                 selectedTaskForChangeDateUrl = selectedTaskForChangeDateUrl,
                                 onEvent = onEvent,
                             )
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Назначить отвественного")
-                        Spacer(modifier = Modifier.height(8.dp))
+
                         ResponsibleUserTaskView(
                             task = task,
                             familyMembers = familyMembers,
                             onEvent = onEvent,
                         )
-                        if (task.value.price != null && task.float.price != 0f) {
-                            PriceTaskView(
-                                task = task,
-                                tittle = title,
-                                onEvent = onEvent,
-                            )
-                        }
+
+                        PriceTaskView(
+                            task = task,
+                            tittle = title,
+                            onEvent = onEvent,
+                        )
+
+
                     }
                 }
             }
@@ -263,6 +306,7 @@ fun CardTaskView(
 private fun DidResponsibleUserTaskView(
     task: TaskOrWish,
     familyMembers: List<User>,
+    userId: String,
     onEvent: (FamilyTasksScreenEvent) -> Unit,
 ) {
     Row(
@@ -272,23 +316,91 @@ private fun DidResponsibleUserTaskView(
     ) {
         familyMembers.forEach { familyMember ->
             if (familyMember.id in task.uuid.forUsers) {
+                if (familyMember.id == userId) {
+                    RadioButton(
+                        selected = familyMember.id in task.uuid.didUsers, onClick = {
+                            onEvent(
+                                FamilyTasksScreenEvent.SetDidResponsibleUser(
+                                    task.value.url,
+                                    familyMember.id
+                                )
+                            )
+                        }, modifier = Modifier
+                            .clip(CircleShape)
+                            .size(40.dp)
+                    )
+                } else {
+                    ImageLoadCoil(
+                        model = familyMember.picture.toString(),
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                shape = MaterialTheme.shapes.extraLarge,
+                                color = if (familyMember.id in task.uuid.didUsers) {
+                                    MaterialTheme.colorScheme.primary
+                                } else Color.Transparent
+                            )
+                            .size(40.dp)
+                            .clickable {
+                                onEvent(
+                                    FamilyTasksScreenEvent.SetDidResponsibleUser(
+                                        task.value.url,
+                                        familyMember.id
+                                    )
+                                )
+                            },
+                        contentDescription = "Avatar Person",
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResponsibleUserTaskView(
+    task: TaskOrWish,
+    familyMembers: List<User>,
+    onEvent: (FamilyTasksScreenEvent) -> Unit,
+) {
+    Column {
+
+        Text(
+            text = "Назначить отвественного",
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 4.dp, end = 4.dp)
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(start = 4.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(familyMembers) { familyMember ->
                 ImageLoadCoil(
                     model = familyMember.picture.toString(),
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.extraLarge)
                         .border(
-                            width = 4.dp,
+                            width = 2.dp,
                             shape = MaterialTheme.shapes.extraLarge,
-                            color = if (familyMember.id in task.uuid.didUsers) {
+                            color = if (familyMember.id in task.uuid.forUsers) {
                                 MaterialTheme.colorScheme.primary
                             } else Color.Transparent
                         )
-                        .size(40.dp)
+                        .size(35.dp)
                         .clickable {
                             onEvent(
-                                FamilyTasksScreenEvent.SetDidResponsibleUser(
-                                    task.value.url,
-                                    familyMember.id
+                                FamilyTasksScreenEvent.AddResponsibleUser(
+                                    productUrl = task.value.url,
+                                    userId = familyMember.id
                                 )
                             )
                         },
@@ -301,52 +413,15 @@ private fun DidResponsibleUserTaskView(
 }
 
 @Composable
-private fun ResponsibleUserTaskView(
-    task: TaskOrWish,
-    familyMembers: List<User>,
-    onEvent: (FamilyTasksScreenEvent) -> Unit,
-) {
-    LazyRow(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(familyMembers) { familyMember ->
-            ImageLoadCoil(
-                model = familyMember.picture.toString(),
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .border(
-                        width = 4.dp,
-                        shape = MaterialTheme.shapes.extraLarge,
-                        color = if (familyMember.id in task.uuid.forUsers) {
-                            MaterialTheme.colorScheme.primary
-                        } else Color.Transparent
-                    )
-                    .size(35.dp)
-                    .clickable {
-                        onEvent(
-                            FamilyTasksScreenEvent.AddResponsibleUser(
-                                productUrl = task.value.url,
-                                userId = familyMember.id
-                            )
-                        )
-                    },
-                contentDescription = "Avatar Person",
-                contentScale = ContentScale.Crop
-            )
-        }
-    }
-}
-
-@Composable
 private fun PriceTaskView(
     task: TaskOrWish,
     tittle: String,
     onEvent: (FamilyTasksScreenEvent) -> Unit,
 ) {
-    var priceText by remember {
-        mutableStateOf(task.value.price ?: "")
-    }
+    var priceText by remember { mutableStateOf(task.value.price ?: "") }
+    val focus = remember { mutableStateOf(false) }
+    val pattern = remember { Regex("^\\d+\$") }
+    val maxChar = 4
 
     Spacer(modifier = Modifier.height(8.dp))
     Row(
@@ -354,131 +429,177 @@ private fun PriceTaskView(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
-
-        IconButton(
-            enabled = priceText.isNotEmpty(),
+        IconButton(enabled = priceText.isNotEmpty(),
             onClick = {
-                onEvent(
-                    FamilyTasksScreenEvent.GetPoint(
-                        points = priceText,
-                        usersId = task.uuid.forUsers,
-                        title = tittle,
-                        productUrl = task.value.url
+                if (priceText.toFloat() != 0f) {
+                    onEvent(
+                        FamilyTasksScreenEvent.GetPoint(
+                            points = priceText,
+                            usersId = task.uuid.forUsers,
+                            title = tittle,
+                            productUrl = task.value.url
+                        )
                     )
-                )
-            }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_heart_delete_24),
-                contentDescription = "Send point"
+                }
+            }) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_minus),
+                contentDescription = null,
             )
         }
-
         BasicTextField(
             value = priceText,
-            onValueChange = {
-                priceText = it.take(4)
-            },
-            textStyle = LocalTextStyle.current.copy(
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            ),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier.border(width = 1.dp, color = Color.Black),
-                    contentAlignment = Alignment.Center
-                ) {
-                    innerTextField()
+            onValueChange = { newText ->
+                if (newText.isEmpty() || newText.matches(pattern)) {
+                    priceText = newText.take(maxChar)
                 }
             },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.NumberPassword
+            textStyle = LocalTextStyle.current.copy(
+                lineHeight = 18.sp,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
             ),
-            modifier = Modifier.width(40.dp)
+            maxLines = 1,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.NumberPassword,
+                imeAction = ImeAction.Done
+            ),
+            decorationBox = { innerTextField ->
+                if (priceText.isEmpty() && !focus.value) {
+                    Text(
+                        text = "0",
+                        lineHeight = 18.sp,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                innerTextField()
+            },
+            modifier = Modifier
+                .width(40.dp)
+                .height(18.dp)
+                .onFocusChanged {
+                    focus.value = it.isFocused
+                }
+                .clearFocusOnKeyboardDismiss()
         )
 
         IconButton(
             enabled = priceText.isNotEmpty(),
             onClick = {
-                onEvent(
-                    FamilyTasksScreenEvent.SendPoint(
-                        points = priceText,
-                        usersId = task.uuid.forUsers,
-                        title = tittle,
-                        productUrl = task.value.url
+                if (priceText.toFloat() != 0f) {
+                    onEvent(
+                        FamilyTasksScreenEvent.SendPoint(
+                            points = priceText,
+                            usersId = task.uuid.forUsers,
+                            title = tittle,
+                            productUrl = task.value.url
+                        )
                     )
-                )
+                }
             }
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_heart_plus_24),
+            Image(
+                painter = painterResource(id = R.drawable.ic_plus),
                 contentDescription = "Send point"
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateTaskView(
     task: TaskOrWishValue,
-    datePikerState: DatePickerState,
+    date: String,
+    resultDate: LocalDateTime,
     onEvent: (FamilyTasksScreenEvent) -> Unit,
-    selectedTaskForChangeDateUrl: MutableState<String>
+    selectedTaskForChangeDateUrl: MutableState<Pair<String, Long>>
 ) {
-
-    val apiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-    val resultDate = LocalDateTime.parse(task.date, apiFormat)
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
+    Box(
+        contentAlignment = Alignment.CenterEnd,
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
-        Text(text = "Дата")
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TextButton(onClick = {
-                if (resultDate > LocalDateTime.now()) {
-                    datePikerState.selectedDateMillis =
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.medium)
+
+                .clickable {
+                    val initDate = if (resultDate > LocalDateTime.now()) {
                         resultDate.toEpochSecond(ZoneOffset.UTC) * 1000
-                } else {
-                    datePikerState.selectedDateMillis =
-                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000
-                }
-                selectedTaskForChangeDateUrl.value = task.url
-                onEvent(FamilyTasksScreenEvent.ChangeStateDateDialog(true))
-            }) {
-                Text(
-                    text =
-                    if (resultDate > LocalDateTime.now()) {
-                        "${resultDate.dayOfMonth}.${resultDate.monthValue}.${resultDate.year}"
                     } else {
-                        val localDateNow = LocalDate.now()
-                        "${localDateNow.dayOfMonth}.${localDateNow.monthValue}.${localDateNow.year}"
+                        LocalDateTime
+                            .now()
+                            .toEpochSecond(ZoneOffset.UTC) * 1000
                     }
-                )
-            }
+                    selectedTaskForChangeDateUrl.value = Pair(task.url, initDate)
+                    onEvent(FamilyTasksScreenEvent.ChangeStateDateDialog(true))
+                }
+                .padding(4.dp)
+        ) {
+            Text(
+                text = date,
+                fontSize = 14.sp,
+                lineHeight = 16.sp
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Image(
+                painter = painterResource(id = R.drawable.ic_calendar),
+                contentDescription = null,
+            )
         }
     }
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun DemoCardTaskView() {
     RastilkaTheme {
-        CardTaskView(
-            task = SupportPreview.task,
-            familyMembers = SupportPreview.listFamily,
-            modifier = Modifier,
-            onEvent = {},
-            datePikerState = rememberDatePickerState(),
-            selectedTaskForChangeDateUrl = remember { mutableStateOf("") },
-        )
+        Column {
+
+            CardTaskView(
+                task = SupportPreview.task,
+                familyMembers = SupportPreview.listFamily,
+                userId = "",
+                isVisibleDescription = remember {
+                    mutableStateOf(false)
+                },
+                modifier = Modifier,
+                onEvent = {},
+                selectedTaskForChangeDateUrl = remember { mutableStateOf(Pair("", 0L)) },
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            CardTaskView(
+                task = SupportPreview.task.copy(
+                    value = SupportPreview.task.value.copy(
+                        photo = null
+                    )
+                ),
+                familyMembers = SupportPreview.listFamily,
+                userId = "",
+                isVisibleDescription = remember {
+                    mutableStateOf(true)
+                },
+                modifier = Modifier,
+                onEvent = {},
+                selectedTaskForChangeDateUrl = remember { mutableStateOf(Pair("", 0L)) },
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            CardTaskView(
+                task = SupportPreview.task,
+                familyMembers = SupportPreview.listFamily,
+                userId = "",
+                isVisibleDescription = remember {
+                    mutableStateOf(true)
+                },
+                modifier = Modifier,
+                onEvent = {},
+                selectedTaskForChangeDateUrl = remember { mutableStateOf(Pair("", 0L)) },
+            )
+        }
     }
 }

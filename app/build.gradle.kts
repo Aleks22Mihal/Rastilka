@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.devtoolsKsp)
     alias(libs.plugins.daggerHiltAndroid)
 }
@@ -32,7 +33,9 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
+                "retrofit2.pro",
+                "moshi.pro"
             )
 
         }
@@ -44,6 +47,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_19
         targetCompatibility = JavaVersion.VERSION_19
     }
@@ -65,6 +69,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -83,7 +88,6 @@ dependencies {
     implementation(libs.moshi.kotlin)
 
     implementation(libs.hilt.android)
-    implementation(libs.androidx.compose.material)
     debugImplementation(libs.androidx.ui.tooling)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -103,15 +107,14 @@ dependencies {
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.view)
 
+    implementation (libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+
     /*Библеотека из https://github.com/aclassen/ComposeReorderable?tab=readme-ov-file
     * Надо будет избавиться от этой стороней библеотеки
     * она нужна для изменения списка перетаскиванием
     * */
     implementation(libs.sh.reorderable)
-
-/*    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")*/
 
     /*    testImplementation("junit:junit:4.13.2")
         androidTestImplementation("androidx.test.ext:junit:1.1.5")

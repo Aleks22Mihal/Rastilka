@@ -5,6 +5,7 @@ import com.rastilka.common.app_data.LogInBody
 import com.rastilka.common.app_data.PriceBody
 import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.data.models.TaskOrWishDTO
+import com.rastilka.data.models.TechnicalSupportMessageDTO
 import com.rastilka.data.models.TransactionDTO
 import com.rastilka.data.models.UserDTO
 import com.rastilka.data.models.UserWithConditionDTO
@@ -45,7 +46,7 @@ interface ApiService {
     suspend fun attachUser(
         @Path("userOneId") userOneId: String,
         @Path("userTwoId") userTwoId: String,
-    ): Response<Unit>
+    ): Response<UserDTO>
 
     @GET("api/friend/detachUser/{userOneId}/{userTwoId}")
     suspend fun detachUser(
@@ -56,14 +57,14 @@ interface ApiService {
     @POST("api/friend/send/{toUserId}/{points}")
     suspend fun sendPoint(
         @Path("toUserId") toUserId: String,
-        @Path("points") points: Int,
+        @Path("points") points: Long,
         @Body body: PriceBody
     ): Response<UserDTO>
 
     @POST("api/friend/get/{fromUserId}/{points}")
     suspend fun getPoint(
         @Path("fromUserId") fromUserId: String,
-        @Path("points") points: Int,
+        @Path("points") points: Long,
         @Body body: PriceBody
     ): Response<UserDTO>
 
@@ -94,7 +95,9 @@ interface ApiService {
         @Part("description") description: RequestBody? = null,
         @Part("price") price: RequestBody? = null,
         @Part picture: MultipartBody.Part? = null,
-        @Part("newFileName") newFileName: RequestBody? = "".toRequestBody()
+        @Part ("date") date: RequestBody? = null,
+        @Part ("forUserId") forUserId: RequestBody? = null,
+        @Part("newFileName") newFileName: RequestBody? = "".toRequestBody(),
     ): Response<Unit>
 
     @GET("api/friend/userDeleteProduct/{productUrl}")
@@ -127,6 +130,23 @@ interface ApiService {
         @Path("urlFrom") urlFrom: String,
         @Path("urlTo") urlTo: String,
     ): Response<Unit>
+
+    @Multipart
+    @POST("api/cabinet/profilePut")
+    suspend fun editUserAndPassword(
+        @Part("name") name: RequestBody,
+        @Part("mail") email: RequestBody,
+        @Part("password") password: RequestBody? = null,
+        @Part pictureData: MultipartBody.Part? = null,
+    ): Response<UserDTO>
+
+    @GET("api/cabinet/getTickets")
+    suspend fun getTickets(): Response<List<TechnicalSupportMessageDTO>>
+    @Multipart
+    @POST("api/cabinet/postTickets")
+    suspend fun postTickets(
+        @Part("message") message: RequestBody,
+    ): Response<List<TechnicalSupportMessageDTO>>
 
     /*
         *//*Получить языки*//*
