@@ -20,7 +20,6 @@ fun NavGraphBuilder.navWishesScreen(navController: NavHostController) {
         startDestination = NavigationScreens.WishScreen.rout,
     ) {
         composable(route = NavigationScreens.WishScreen.rout) {
-
             val viewModel = hiltViewModel<FamilyWishesViewModel>()
 
             FamilyWishesScreen(

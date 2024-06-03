@@ -24,13 +24,11 @@ import com.rastilka.presentation.screens.edit_profile_screen.data.EditProfileScr
 import com.rastilka.presentation.screens.edit_profile_screen.data.EditTextField
 import com.rastilka.presentation.ui.theme.RastilkaTheme
 
-
 @Composable
 fun EditProfileAttributesView(
     state: State<EditProfileScreenState>,
     onEvent: (EditProfileScreenEvent) -> Unit
 ) {
-
     val listTextField = listOf(
         EditTextField(
             value = state.value.editName,
@@ -74,7 +72,7 @@ fun EditProfileAttributesView(
                 imeAction = ImeAction.Default
             )
         ),
-        )
+    )
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -87,7 +85,6 @@ fun EditProfileAttributesView(
             .fillMaxWidth()
             .padding(10.dp)
     ) {
-
         listTextField.forEach { editTextField ->
 
             EditProfileTextFieldView(
@@ -100,7 +97,6 @@ fun EditProfileAttributesView(
         }
     }
 }
-
 
 @Preview
 @Composable

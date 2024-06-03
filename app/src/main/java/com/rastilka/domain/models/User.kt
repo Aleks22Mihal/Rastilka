@@ -1,7 +1,6 @@
 package com.rastilka.domain.models
 
 import com.rastilka.common.app_data.StatusUser
-import com.squareup.moshi.JsonClass
 
 
 data class User(

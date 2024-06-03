@@ -45,25 +45,25 @@ fun FamilyMemberView(
             .width(size)
 
     ) {
-            ImageLoadCoil(
-                model = familyMember.picture.toString(),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp,
-                        shape = CircleShape,
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-                    )
-                    .size(size)
-                    .clickable { select() },
-                contentDescription = "Avatar Person",
-                contentScale = ContentScale.Crop
-            )
+        ImageLoadCoil(
+            model = familyMember.picture.toString(),
+            modifier = Modifier
+                .clip(CircleShape)
+                .border(
+                    width = 2.dp,
+                    shape = CircleShape,
+                    color = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent
+                )
+                .size(size)
+                .clickable { select() },
+            contentDescription = "Avatar Person",
+            contentScale = ContentScale.Crop
+        )
         if (isVisibleNameUser) {
             Text(
                 text = familyMember.name,
                 fontSize = 12.sp,
-                fontWeight = FontWeight(400),
+                fontWeight = FontWeight(weight = 400),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 16.sp,

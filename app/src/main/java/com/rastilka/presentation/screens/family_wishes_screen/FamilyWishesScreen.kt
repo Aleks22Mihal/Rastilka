@@ -54,15 +54,17 @@ fun FamilyWishesScreen(
     onEvent: (FamilyWishScreenEvent) -> Unit,
     navController: NavController
 ) {
-
     val stateRefresh = rememberPullToRefreshState(
         positionalThreshold = 180.dp,
         enabled = {
             state.value.initLoadingState == LoadingState.SuccessfulLoad
         }
     )
-    val scaleFraction = if (stateRefresh.isRefreshing) 1f else
+    val scaleFraction = if (stateRefresh.isRefreshing) {
+        1f
+    } else {
         LinearOutSlowInEasing.transform(stateRefresh.progress).coerceIn(0f, 1f)
+    }
 
     val focusManager = LocalFocusManager.current
 
@@ -171,7 +173,6 @@ fun FamilyWishesScreen(
                     CircularProgressIndicator()
                 }
             }
-
         }
         Box(modifier = Modifier.fillMaxWidth()) {
             PullToRefreshContainer(

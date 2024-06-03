@@ -16,7 +16,6 @@ fun NavGraphBuilder.navScoresScreen() {
         startDestination = NavigationScreens.ScoresScreen.rout,
     ) {
         composable(route = NavigationScreens.ScoresScreen.rout) {
-
             val viewModel = hiltViewModel<TransactionViewModel>()
 
             TransactionScreen(

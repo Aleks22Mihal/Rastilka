@@ -88,7 +88,6 @@ fun TechnicalChatBottomSendView(
                             innerTextField()
                         }
                     }
-
                 },
                 modifier = Modifier.weight(0.8f)
             )

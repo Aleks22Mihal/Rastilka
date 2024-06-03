@@ -32,7 +32,7 @@ private val LightColorScheme = lightColorScheme(
     primary = Color(0xFFFF9C1E),
     secondary = Color(0xFF5BCDFF),
     tertiary = Color(0xFF696969)
-   // tertiary = Color(0xFF5BCDFF),
+    // tertiary = Color(0xFF5BCDFF),
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -42,7 +42,7 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = Color.White,
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
-    */
+     */
 )
 
 @Composable

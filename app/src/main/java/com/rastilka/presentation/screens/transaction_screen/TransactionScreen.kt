@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rastilka.R
 import com.rastilka.common.app_data.LoadingState
@@ -47,7 +46,6 @@ fun TransactionScreen(
     state: State<TransactionScreenState>,
     onEvent: (TransactionScreenEvent) -> Unit
 ) {
-
     val lazyListState = rememberLazyListState()
     val stateRefresh = rememberPullToRefreshState(
         positionalThreshold = 180.dp,
@@ -55,8 +53,11 @@ fun TransactionScreen(
             state.value.initLoadingState == LoadingState.SuccessfulLoad
         }
     )
-    val scaleFraction = if (stateRefresh.isRefreshing) 1f else
+    val scaleFraction = if (stateRefresh.isRefreshing) {
+        1f
+    } else {
         LinearOutSlowInEasing.transform(stateRefresh.progress).coerceIn(0f, 1f)
+    }
 
     if (stateRefresh.isRefreshing) {
         LaunchedEffect(true) {
@@ -99,7 +100,6 @@ fun TransactionScreen(
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
                 ) {
-
                     LazyColumn(
                         contentPadding = PaddingValues(top = 4.dp, bottom = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -141,9 +141,10 @@ fun TransactionScreen(
             }
 
             LoadingState.FailedLoad -> {
-                ErrorView(refreshFun = {
-                    onEvent(TransactionScreenEvent.Refresh)
-                }
+                ErrorView(
+                    refreshFun = {
+                        onEvent(TransactionScreenEvent.Refresh)
+                    }
                 )
             }
         }

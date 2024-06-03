@@ -18,7 +18,6 @@ import com.rastilka.presentation.navigation.bottom_navigation_bar.data.Navigatio
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-
     val navigationButtons = listOf(
         NavigationBarItem.FriendsScreen,
         NavigationBarItem.TasksScreen,
@@ -33,7 +32,7 @@ fun BottomNavigationBar(navController: NavController) {
         containerColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.primary,
         modifier = Modifier.height(90.dp)
-    ){
+    ) {
         navigationButtons.forEach { navigationButtons ->
             NavigationBarItem(
                 colors = NavigationBarItemDefaults.colors(

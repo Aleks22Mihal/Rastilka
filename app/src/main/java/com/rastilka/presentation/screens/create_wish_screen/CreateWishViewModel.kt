@@ -11,7 +11,7 @@ import com.rastilka.domain.use_case.CreateTaskOrWishUseCase
 import com.rastilka.domain.use_case.GetUserBySessionKeyUseCase
 import com.rastilka.presentation.navigation.navigation_models.AppNavGraph
 import com.rastilka.presentation.navigation.navigation_models.NavigationScreens
-import com.rastilka.presentation.screens.create_task_screen.data.CreateWishState
+import com.rastilka.presentation.screens.create_wish_screen.data.CreateWishState
 import com.rastilka.presentation.screens.create_wish_screen.data.CreateWishEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

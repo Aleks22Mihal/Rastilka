@@ -6,7 +6,6 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -34,7 +33,7 @@ import com.rastilka.presentation.ui.theme.RastilkaTheme
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun LazyColumTasksView(
     state: State<FamilyTasksScreenState>,
@@ -42,7 +41,6 @@ internal fun LazyColumTasksView(
     selectedTaskForChangeDate: MutableState<Pair<String, Long>>,
     userId: String,
 ) {
-
     val view = LocalView.current
 
     val lazyListState = rememberLazyListState()

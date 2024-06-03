@@ -3,6 +3,7 @@ package com.rastilka.presentation.screens.family_wishes_screen.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,6 +41,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -64,7 +66,6 @@ fun CardWishView(
     onEvent: (FamilyWishScreenEvent) -> Unit,
     isVisibleAdditionalContent: MutableState<Boolean> = remember { mutableStateOf(false) },
 ) {
-
     var expandedDropDownMenu by remember { mutableStateOf(false) }
 
     var priceText by remember { mutableStateOf(wish.value.salePrice ?: "1") }
@@ -118,7 +119,7 @@ fun CardWishView(
             }
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
@@ -133,13 +134,22 @@ fun CardWishView(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = wish.value.h1)
-                    Text(text = wish.value.assembly ?: "")
+                    Text(
+                        text = wish.value.assembly ?: "",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
                 ImageLoadCoil(
                     model = wish.value.photo.toString(),
                     modifier = Modifier
                         .size(80.dp)
-                        .clip(MaterialTheme.shapes.medium),
+                        .clip(MaterialTheme.shapes.medium)
+                        .border(
+                            width = 5.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = MaterialTheme.shapes.medium
+                        ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop
                 )
@@ -155,7 +165,8 @@ fun CardWishView(
                     ) {
                         items(
                             items = listFamilyMembers,
-                            key = { familyMember -> familyMember.id }) { familyMember ->
+                            key = { familyMember -> familyMember.id }
+                        ) { familyMember ->
                             FamilyMemberView(
                                 familyMember = familyMember,
                                 isSelected = familyMember.id in wish.uuid.forUsers,
@@ -184,7 +195,7 @@ fun CardWishView(
                             onClick = {
                                 if (priceText.isNotEmpty()) {
                                     onEvent(
-                                        FamilyWishScreenEvent.GetPoint(
+                                        FamilyWishScreenEvent.SetPoint(
                                             fromUserId = wish.uuid.forUsers.first(),
                                             points = priceText.toLong(),
                                             comment = wish.value.h1,
@@ -193,7 +204,8 @@ fun CardWishView(
                                         )
                                     )
                                 }
-                            }) {
+                            }
+                        ) {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_minus),
                                 contentDescription = null,
@@ -244,7 +256,7 @@ fun CardWishView(
                             onClick = {
                                 if (priceText.isNotEmpty()) {
                                     onEvent(
-                                        FamilyWishScreenEvent.SetPoint(
+                                        FamilyWishScreenEvent.GetPoint(
                                             fromUserId = wish.uuid.forUsers.first(),
                                             points = priceText.toLong(),
                                             comment = wish.value.h1,
@@ -253,7 +265,8 @@ fun CardWishView(
                                         )
                                     )
                                 }
-                            }) {
+                            }
+                        ) {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_plus),
                                 contentDescription = null,
@@ -266,10 +279,8 @@ fun CardWishView(
     }
 }
 
-
 @Composable
 private fun ActiveUserView(user: User?) {
-
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -302,7 +313,6 @@ private fun ActiveUserView(user: User?) {
             )
         }
     }
-
 }
 
 @Preview

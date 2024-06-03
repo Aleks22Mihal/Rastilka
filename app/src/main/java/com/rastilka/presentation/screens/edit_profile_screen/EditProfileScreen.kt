@@ -56,7 +56,6 @@ fun EditProfileScreen(
     onEvent: (EditProfileScreenEvent) -> Unit,
     navController: NavController,
 ) {
-
     val focusManager = LocalFocusManager.current
 
     Scaffold(
@@ -90,9 +89,7 @@ fun EditProfileScreen(
     ) { scaffoldInnerPadding ->
 
         when (state.value.initLoadingState) {
-
             LoadingState.SuccessfulLoad -> {
-
                 Column(
                     verticalArrangement = Arrangement.spacedBy(
                         space = 8.dp,

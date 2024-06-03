@@ -14,7 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import com.rastilka.common.app_data.LoadingState
 import com.rastilka.presentation.navigation.AppNavHost
 import com.rastilka.presentation.navigation.bottom_navigation_bar.BottomNavigationBar
-import com.rastilka.presentation.navigation.navigation_models.NavigationScreens
+import com.rastilka.presentation.navigation.navigation_models.NavigationScreens.CreateTaskScreen
+import com.rastilka.presentation.navigation.navigation_models.NavigationScreens.CreateWishScreen
 import com.rastilka.presentation.screens.login_screen.LoginScreen
 import com.rastilka.presentation.screens.login_screen.LoginViewModel
 import com.rastilka.presentation.screens.splash_screen.SplashScreen
@@ -30,11 +31,9 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-
             val loginViewModel: LoginViewModel = hiltViewModel()
             val user by loginViewModel.user.collectAsState()
             val loadingStateInit by loginViewModel.loadingStatusInit.collectAsState()
-
 
             RastilkaTheme(
                 darkTheme = false
@@ -48,8 +47,8 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             bottomBar = {
                                 AnimatedVisibility(
-                                    visible = navBackStackEntry?.destination?.route != NavigationScreens.CreateTaskScreen.rout ||
-                                            navBackStackEntry?.destination?.route != NavigationScreens.CreateWishScreen.rout,
+                                    visible = navBackStackEntry?.destination?.route != CreateTaskScreen.rout ||
+                                        navBackStackEntry?.destination?.route != CreateWishScreen.rout,
                                 ) {
                                     BottomNavigationBar(navController = navController)
                                 }

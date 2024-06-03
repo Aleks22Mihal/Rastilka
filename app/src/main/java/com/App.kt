@@ -7,12 +7,11 @@ import coil.util.DebugLogger
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class App: Application(), ImageLoaderFactory{
+class App : Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader(this)
             .newBuilder()
             .logger(DebugLogger())
             .build()
     }
-
 }

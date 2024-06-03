@@ -47,7 +47,6 @@ fun EditProfileTextFieldView(
     keyboardOptions: KeyboardOptions,
     onValueChange: (String) -> Unit,
 ) {
-
     var focusState by remember { mutableStateOf(false) }
 
     BasicTextField(
@@ -74,14 +73,18 @@ fun EditProfileTextFieldView(
                     Color.Black
                 } else if (textError != null) {
                     MaterialTheme.colorScheme.error
-                } else MaterialTheme.colorScheme.primary,
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 label = "",
             )
 
             val colorAnimateBorder by animateColorAsState(
                 targetValue = if (textError != null) {
                     MaterialTheme.colorScheme.error
-                } else Color.Transparent,
+                } else {
+                    Color.Transparent
+                },
                 label = "",
             )
 
@@ -89,7 +92,9 @@ fun EditProfileTextFieldView(
                 Box(
                     contentAlignment = if (labelText != null) {
                         Alignment.BottomStart
-                    } else Alignment.CenterStart,
+                    } else {
+                        Alignment.CenterStart
+                    },
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.medium)
                         .fillMaxWidth()

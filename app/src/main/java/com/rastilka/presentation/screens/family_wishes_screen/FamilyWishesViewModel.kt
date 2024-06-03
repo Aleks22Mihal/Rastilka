@@ -60,7 +60,6 @@ class FamilyWishesViewModel @Inject constructor(
                     productUrl = event.productUrl,
                     assembly = event.assembly
                 )
-
             }
 
             is FamilyWishScreenEvent.SetPoint -> {
@@ -126,7 +125,6 @@ class FamilyWishesViewModel @Inject constructor(
         productUrl: String,
         userId: String,
     ) {
-
         _state.value = state.value.copy(
             loadingState = LoadingState.Loading
         )
@@ -137,9 +135,11 @@ class FamilyWishesViewModel @Inject constructor(
             }
 
             if (wish != null) {
-                if (wish.uuid.forUsers.isEmpty()){
-                    when (val resource =
-                        addResponsibleUser(productUrl, userId)) {
+                if (wish.uuid.forUsers.isEmpty()) {
+                    when (
+                        val resource =
+                            addResponsibleUser(productUrl, userId)
+                    ) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
@@ -177,12 +177,13 @@ class FamilyWishesViewModel @Inject constructor(
                                     )
                                 }
                             }
-
                         }
                     }
                 } else if (wish.uuid.forUsers.size == 1 && userId in wish.uuid.forUsers) {
-                    when (val resource =
-                        addResponsibleUser(productUrl, wish.uuid.forUsers.first())) {
+                    when (
+                        val resource =
+                            addResponsibleUser(productUrl, wish.uuid.forUsers.first())
+                    ) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
@@ -220,7 +221,6 @@ class FamilyWishesViewModel @Inject constructor(
                                     )
                                 }
                             }
-
                         }
                     }
                 } else {
@@ -258,8 +258,10 @@ class FamilyWishesViewModel @Inject constructor(
                             }
 
                             is Resource.Success -> {
-                                when (val resourceListWishes =
-                                    getWishesUseCase(type = TypeIdForApi.wishes)) {
+                                when (
+                                    val resourceListWishes =
+                                        getWishesUseCase(type = TypeIdForApi.wishes)
+                                ) {
                                     is Resource.Success -> {
                                         _state.value = state.value.copy(
                                             loadingState = LoadingState.SuccessfulLoad,
@@ -286,7 +288,6 @@ class FamilyWishesViewModel @Inject constructor(
             }
         }
     }
-
 
     /*    private fun setResponsibleUser(productUrl: String, userId: String, activeUserId: List<String>) {
             viewModelScope.launch {
@@ -366,12 +367,14 @@ class FamilyWishesViewModel @Inject constructor(
             loadingState = LoadingState.Loading
         )
         viewModelScope.launch {
-            when (val resourceGetPoints =
-                setPointsUseCase(
-                    toUserId = fromUserId,
-                    points = points,
-                    comment = comment
-                )) {
+            when (
+                val resourceGetPoints =
+                    setPointsUseCase(
+                        toUserId = fromUserId,
+                        points = points,
+                        comment = comment
+                    )
+            ) {
                 is Resource.Error -> {
                     _state.value = state.value.copy(
                         loadingState = LoadingState.FailedLoad,
@@ -386,11 +389,13 @@ class FamilyWishesViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    when (val resourceEditSalePointsWish = editWishUseCase(
-                        productUrl = productUrl,
-                        property = "salePrice",
-                        value = points.toString()
-                    )) {
+                    when (
+                        val resourceEditSalePointsWish = editWishUseCase(
+                            productUrl = productUrl,
+                            property = "salePrice",
+                            value = points.toString()
+                        )
+                    ) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
@@ -406,11 +411,13 @@ class FamilyWishesViewModel @Inject constructor(
 
                         is Resource.Success -> {
                             val sum = assembly.toLong() - points
-                            when (val resourceEditAssemblyWish = editWishUseCase(
-                                productUrl = productUrl,
-                                property = "assembly",
-                                value = sum.toString()
-                            )) {
+                            when (
+                                val resourceEditAssemblyWish = editWishUseCase(
+                                    productUrl = productUrl,
+                                    property = "assembly",
+                                    value = sum.toString()
+                                )
+                            ) {
                                 is Resource.Error -> {
                                     _state.value = state.value.copy(
                                         loadingState = LoadingState.FailedLoad,
@@ -425,8 +432,10 @@ class FamilyWishesViewModel @Inject constructor(
                                 }
 
                                 is Resource.Success -> {
-                                    when (val resourceListWishes =
-                                        getWishesUseCase(type = TypeIdForApi.wishes)) {
+                                    when (
+                                        val resourceListWishes =
+                                            getWishesUseCase(type = TypeIdForApi.wishes)
+                                    ) {
                                         is Resource.Success -> {
                                             when (val resourceListFamily = getFamilyMembers()) {
                                                 is Resource.Error -> {
@@ -488,12 +497,13 @@ class FamilyWishesViewModel @Inject constructor(
             loadingState = LoadingState.Loading
         )
         viewModelScope.launch {
-            when (val resourceSetPoints =
-                getPointsUseCase(
-                    fromUserId = fromUserId,
-                    points = points,
-                    comment = comment,
-                )
+            when (
+                val resourceSetPoints =
+                    getPointsUseCase(
+                        fromUserId = fromUserId,
+                        points = points,
+                        comment = comment,
+                    )
             ) {
                 is Resource.Error -> {
                     _state.value = state.value.copy(
@@ -509,11 +519,13 @@ class FamilyWishesViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    when (val resourceEditSalePointsWish = editWishUseCase(
-                        productUrl = productUrl,
-                        property = "salePrice",
-                        value = points.toString()
-                    )) {
+                    when (
+                        val resourceEditSalePointsWish = editWishUseCase(
+                            productUrl = productUrl,
+                            property = "salePrice",
+                            value = points.toString()
+                        )
+                    ) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
@@ -529,11 +541,13 @@ class FamilyWishesViewModel @Inject constructor(
 
                         is Resource.Success -> {
                             val sum = assembly.toLong() + points
-                            when (val resourceEditAssemblyWish = editWishUseCase(
-                                productUrl = productUrl,
-                                property = "assembly",
-                                value = sum.toString()
-                            )) {
+                            when (
+                                val resourceEditAssemblyWish = editWishUseCase(
+                                    productUrl = productUrl,
+                                    property = "assembly",
+                                    value = sum.toString()
+                                )
+                            ) {
                                 is Resource.Error -> {
                                     _state.value = state.value.copy(
                                         loadingState = LoadingState.FailedLoad,
@@ -548,11 +562,15 @@ class FamilyWishesViewModel @Inject constructor(
                                 }
 
                                 is Resource.Success -> {
-                                    when (val resourceListWishes =
-                                        getWishesUseCase(type = TypeIdForApi.wishes)) {
+                                    when (
+                                        val resourceListWishes =
+                                            getWishesUseCase(type = TypeIdForApi.wishes)
+                                    ) {
                                         is Resource.Success -> {
-                                            when (val resourceListFamily =
-                                                getFamilyMembers.invoke()) {
+                                            when (
+                                                val resourceListFamily =
+                                                    getFamilyMembers.invoke()
+                                            ) {
                                                 is Resource.Error -> {
                                                     _state.value = state.value.copy(
                                                         loadingState = LoadingState.FailedLoad,
@@ -621,8 +639,10 @@ class FamilyWishesViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    when (val resourceListWishes =
-                        getWishesUseCase.invoke(type = TypeIdForApi.wishes)) {
+                    when (
+                        val resourceListWishes =
+                            getWishesUseCase.invoke(type = TypeIdForApi.wishes)
+                    ) {
                         is Resource.Success -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.SuccessfulLoad,

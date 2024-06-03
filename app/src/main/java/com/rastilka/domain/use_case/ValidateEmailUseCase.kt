@@ -6,15 +6,11 @@ import javax.inject.Inject
 
 class ValidateEmailUseCase @Inject constructor() {
 
-
     operator fun invoke(email: String): Resource<Unit> {
-
         if (email.isBlank()) {
-
             return Resource.Error(
                 message = "Почта не может быть пустой"
             )
-
         }
 
         val emailAddressPattern =
@@ -32,5 +28,4 @@ class ValidateEmailUseCase @Inject constructor() {
         }
         return Resource.Success(data = null)
     }
-
 }

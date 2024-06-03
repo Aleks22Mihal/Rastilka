@@ -96,7 +96,6 @@ fun CameraView(
     }
 
     if (hasCameraPermission) {
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -169,9 +168,7 @@ fun CameraView(
                                 }
 
                             try {
-
                                 cameraProvider?.let {
-
                                     it.unbindAll()
 
                                     camera = it.bindToLifecycle(
@@ -207,7 +204,9 @@ fun CameraView(
                     painter = painterResource(
                         id = if (enableTorch) {
                             R.drawable.ic_flash_on_24
-                        } else R.drawable.ic_flash_off_24
+                        } else {
+                            R.drawable.ic_flash_off_24
+                        }
                     ),
                     tint = Color.White,
                     contentDescription = null

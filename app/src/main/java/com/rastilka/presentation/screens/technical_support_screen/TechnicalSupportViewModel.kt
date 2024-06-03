@@ -74,7 +74,6 @@ class TechnicalSupportViewModel @Inject constructor(
     }
 
     private fun init() {
-
         _state.value = state.value.copy(
             initLoadingState = LoadingState.Loading
         )
@@ -83,24 +82,20 @@ class TechnicalSupportViewModel @Inject constructor(
             val resourceUser = getUserBySessionKeyUseCase()
             val resourceTechnicalSupportMessages = getTechnicalSupportMessages()
 
-            if (resourceTechnicalSupportMessages is Resource.Success
-                && resourceUser is Resource.Success
+            if (resourceTechnicalSupportMessages is Resource.Success &&
+                resourceUser is Resource.Success
             ) {
-
                 _state.value = state.value.copy(
                     user = resourceUser.data,
                     listMessage = resourceTechnicalSupportMessages.data?.reversed() ?: emptyList(),
                     initLoadingState = LoadingState.SuccessfulLoad
                 )
-
-            } else if (resourceTechnicalSupportMessages is Resource.Loading
-                || resourceUser is Resource.Loading
+            } else if (resourceTechnicalSupportMessages is Resource.Loading ||
+                resourceUser is Resource.Loading
             ) {
-
                 _state.value = state.value.copy(
                     initLoadingState = LoadingState.Loading
                 )
-
             } else {
                 _state.value = state.value.copy(
                     initLoadingState = LoadingState.FailedLoad,
@@ -118,9 +113,10 @@ class TechnicalSupportViewModel @Inject constructor(
 
             viewModelScope.launch {
                 delay(5000)
-                when (val resource = sendTechnicalSupportMessage(
-                    state.value.message
-                )
+                when (
+                    val resource = sendTechnicalSupportMessage(
+                        state.value.message
+                    )
                 ) {
                     is Resource.Error -> {
                         _state.value = state.value.copy(

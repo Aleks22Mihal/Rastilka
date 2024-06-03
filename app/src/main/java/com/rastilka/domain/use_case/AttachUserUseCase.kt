@@ -10,7 +10,7 @@ class AttachUserUseCase @Inject constructor(private val mainRepository: MainRepo
     suspend operator fun invoke(
         userOneId: String,
         userTwoId: String,
-    ):Resource<User> {
-       return mainRepository.attachUser(userOneId, userTwoId)
+    ): Resource<User> {
+        return mainRepository.attachUser(userOneId, userTwoId)
     }
 }

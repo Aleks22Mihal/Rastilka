@@ -9,4 +9,4 @@ data class TaskOrWishFloatDTO(
     val price: Float? = null,
     @Json(name = "salePrice")
     val salePrice: Float? = null,
-    )
+)

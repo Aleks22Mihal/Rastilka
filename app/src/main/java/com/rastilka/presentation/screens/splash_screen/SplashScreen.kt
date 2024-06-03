@@ -24,7 +24,7 @@ fun SplashScreen() {
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-   //             .windowInsetsPadding(WindowInsets.safeDrawing)
+            //.windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logo_rastilka),

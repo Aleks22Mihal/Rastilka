@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -84,7 +85,6 @@ fun CardTaskView(
     onEvent: (FamilyTasksScreenEvent) -> Unit,
     selectedTaskForChangeDateUrl: MutableState<Pair<String, Long>>,
 ) {
-    
     var title by remember {
         mutableStateOf(task.value.h1)
     }
@@ -98,7 +98,9 @@ fun CardTaskView(
             if (it == SwipeToDismissBoxValue.EndToStart) {
                 onEvent(FamilyTasksScreenEvent.DeleteTask(productUrl = task.value.url))
                 true
-            } else false
+            } else {
+                false
+            }
         }
     )
 
@@ -108,7 +110,9 @@ fun CardTaskView(
 
     val date = if (resultDate > LocalDateTime.now()) {
         resultDate.format(format)
-    } else LocalDateTime.now().format(format)
+    } else {
+        LocalDateTime.now().format(format)
+    }
 
     SwipeToDismissBox(
         state = dismissState,
@@ -292,15 +296,12 @@ fun CardTaskView(
                             tittle = title,
                             onEvent = onEvent,
                         )
-
-
                     }
                 }
             }
         }
     }
 }
-
 
 @Composable
 private fun DidResponsibleUserTaskView(
@@ -318,14 +319,19 @@ private fun DidResponsibleUserTaskView(
             if (familyMember.id in task.uuid.forUsers) {
                 if (familyMember.id == userId) {
                     RadioButton(
-                        selected = familyMember.id in task.uuid.didUsers, onClick = {
+                        selected = familyMember.id in task.uuid.didUsers,
+                        onClick = {
                             onEvent(
                                 FamilyTasksScreenEvent.SetDidResponsibleUser(
                                     task.value.url,
                                     familyMember.id
                                 )
                             )
-                        }, modifier = Modifier
+                        },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.secondary
+                        ),
+                        modifier = Modifier
                             .clip(CircleShape)
                             .size(40.dp)
                     )
@@ -338,8 +344,10 @@ private fun DidResponsibleUserTaskView(
                                 width = 2.dp,
                                 shape = MaterialTheme.shapes.extraLarge,
                                 color = if (familyMember.id in task.uuid.didUsers) {
-                                    MaterialTheme.colorScheme.primary
-                                } else Color.Transparent
+                                    MaterialTheme.colorScheme.secondary
+                                } else {
+                                    Color.Transparent
+                                }
                             )
                             .size(40.dp)
                             .clickable {
@@ -366,17 +374,37 @@ private fun ResponsibleUserTaskView(
     onEvent: (FamilyTasksScreenEvent) -> Unit,
 ) {
     Column {
+        familyMembers.forEach { familyMember ->
 
-        Text(
-            text = "Назначить отвественного",
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 4.dp, end = 4.dp)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
+            if (familyMember.id in task.uuid.forUsers) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 4.dp, end = 4.dp)
+                ) {
+                    Text(
+                        text = familyMember.name,
+                        fontSize = 16.sp,
+                        lineHeight = 18.sp,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = familyMember.canUsePoints.toString(),
+                        fontSize = 16.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_rastilka),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
             contentPadding = PaddingValues(start = 4.dp, end = 4.dp),
@@ -392,8 +420,10 @@ private fun ResponsibleUserTaskView(
                             width = 2.dp,
                             shape = MaterialTheme.shapes.extraLarge,
                             color = if (familyMember.id in task.uuid.forUsers) {
-                                MaterialTheme.colorScheme.primary
-                            } else Color.Transparent
+                                MaterialTheme.colorScheme.secondary
+                            } else {
+                                Color.Transparent
+                            }
                         )
                         .size(35.dp)
                         .clickable {
@@ -429,7 +459,8 @@ private fun PriceTaskView(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
-        IconButton(enabled = priceText.isNotEmpty(),
+        IconButton(
+            enabled = priceText.isNotEmpty(),
             onClick = {
                 if (priceText.toFloat() != 0f) {
                     onEvent(
@@ -441,7 +472,8 @@ private fun PriceTaskView(
                         )
                     )
                 }
-            }) {
+            }
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_minus),
                 contentDescription = null,
@@ -526,7 +558,6 @@ fun DateTaskView(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .clip(MaterialTheme.shapes.medium)
-
                 .clickable {
                     val initDate = if (resultDate > LocalDateTime.now()) {
                         resultDate.toEpochSecond(ZoneOffset.UTC) * 1000
@@ -554,13 +585,11 @@ fun DateTaskView(
     }
 }
 
-
 @Preview
 @Composable
 private fun DemoCardTaskView() {
     RastilkaTheme {
         Column {
-
             CardTaskView(
                 task = SupportPreview.task,
                 familyMembers = SupportPreview.listFamily,

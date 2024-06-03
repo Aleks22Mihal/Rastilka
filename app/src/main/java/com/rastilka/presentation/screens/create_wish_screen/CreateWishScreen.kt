@@ -71,7 +71,6 @@ fun CreateWishScreen(
     navController: NavController,
     viewModel: CreateWishViewModel = hiltViewModel()
 ) {
-
     val state by viewModel.state.collectAsState()
 
     val focusManager = LocalFocusManager.current
@@ -253,7 +252,8 @@ fun CreateWishScreen(
             ) {
                 if (state.loadingState != LoadingState.Loading) {
                     Text(text = "Сохранить")
-                }else{
+                } 
+                else {
                     CircularProgressIndicator()
                 }
             }

@@ -30,13 +30,11 @@ internal fun DialogTaskDatePickerView(
     taskDateMillis: Long,
     onEvent: (FamilyTasksScreenEvent) -> Unit
 ) {
-
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = taskDateMillis,
         yearRange = LocalDate.now().year..DatePickerDefaults.YearRange.last,
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-
                 val now = LocalDateTime.now().minusDays(1)
                 val parForConSecToMillisecond = 1000
                 val nowInSeconds =
@@ -65,9 +63,7 @@ internal fun DialogTaskDatePickerView(
         },
         confirmButton = {
             TextButton(onClick = {
-
                 if (datePickerState.selectedDateMillis != null) {
-
                     val apiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                     val instant =
                         Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)

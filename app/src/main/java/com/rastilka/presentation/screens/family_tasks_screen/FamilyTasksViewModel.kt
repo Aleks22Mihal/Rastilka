@@ -49,7 +49,6 @@ class FamilyTasksViewModel @Inject constructor(
 
     fun onEvent(event: FamilyTasksScreenEvent) {
         when (event) {
-
             is FamilyTasksScreenEvent.Refresh -> {
                 init()
             }
@@ -100,10 +99,8 @@ class FamilyTasksViewModel @Inject constructor(
         }
     }
 
-
     private fun init() {
         viewModelScope.launch {
-
             _state.value = state.value.copy(initLoadingState = LoadingState.Loading)
             val resourceListTasks = getTasksUseCase.invoke(type = TypeIdForApi.tasks)
             val resourceFamilyMembers = getFamilyMembers.invoke()
@@ -122,7 +119,6 @@ class FamilyTasksViewModel @Inject constructor(
                 )
 
                 getFilterTasks()
-
             } else if (resourceFamilyMembers is Resource.Loading && resourceListTasks is Resource.Loading && resourceUser is Resource.Loading) {
                 _state.value = state.value.copy(
                     initLoadingState = LoadingState.Loading
@@ -148,7 +144,6 @@ class FamilyTasksViewModel @Inject constructor(
     }
 
     private fun getFilterTasks() {
-
         val filterTaskByUser = state.value.tasksList.filter { task ->
             state.value.filterUserId in task.uuid.forUsers
         }
@@ -160,7 +155,9 @@ class FamilyTasksViewModel @Inject constructor(
 
             if (state.value.filterDateNow) {
                 resultDate <= LocalDate.now()
-            } else LocalDate.now() < resultDate
+            } else {
+                LocalDate.now() < resultDate
+            }
         }
 
         _state.value = state.value.copy(
@@ -168,7 +165,9 @@ class FamilyTasksViewModel @Inject constructor(
                 filterTaskByDate.sortedBy { task ->
                     task.value.date
                 }
-            }else filterTaskByDate
+            } else {
+                filterTaskByDate
+            }
         )
     }
 
@@ -192,10 +191,8 @@ class FamilyTasksViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-
                     when (val resourceListTasks = getTasksUseCase(type = TypeIdForApi.tasks)) {
                         is Resource.Success -> {
-
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.SuccessfulLoad,
                                 tasksList = resourceListTasks.data ?: emptyList()
@@ -228,19 +225,18 @@ class FamilyTasksViewModel @Inject constructor(
     }
 
     /*
-    * Берем нашу таску к которой хотим добавить отвественного
-    * Если у нас один юзер есть и его id совпадает нечего не делаем
-    * Иначе если один юзер и его id не совпадает удаляем старого и добавляем нового
-    * Иначе прогоняем цикл чтобы удалить всех пользователей и добавить нового
-    *
-    * Почему так в одной из версий растилок был список отвественныхЮ сейчас только один
-    *
-    */
+     * Берем нашу таску к которой хотим добавить отвественного
+     * Если у нас один юзер есть и его id совпадает нечего не делаем
+     * Иначе если один юзер и его id не совпадает удаляем старого и добавляем нового
+     * Иначе прогоняем цикл чтобы удалить всех пользователей и добавить нового
+     *
+     * Почему так в одной из версий растилок был список отвественныхЮ сейчас только один
+     *
+     */
     private fun setResponsibleUser(
         productUrl: String,
         userId: String,
     ) {
-
         _state.value = state.value.copy(
             loadingState = LoadingState.Loading
         )
@@ -256,8 +252,10 @@ class FamilyTasksViewModel @Inject constructor(
                         loadingState = LoadingState.SuccessfulLoad
                     )
                 } else if (task.uuid.forUsers.size == 1 && userId !in task.uuid.forUsers) {
-                    when (val resource =
-                        addResponsibleUser.invoke(productUrl, task.uuid.forUsers.first())) {
+                    when (
+                        val resource =
+                            addResponsibleUser.invoke(productUrl, task.uuid.forUsers.first())
+                    ) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.FailedLoad,
@@ -287,8 +285,10 @@ class FamilyTasksViewModel @Inject constructor(
                                 }
 
                                 is Resource.Success -> {
-                                    when (val resourceListTasks =
-                                        getTasksUseCase.invoke(type = TypeIdForApi.tasks)) {
+                                    when (
+                                        val resourceListTasks =
+                                            getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                                    ) {
                                         is Resource.Success -> {
                                             _state.value = state.value.copy(
                                                 loadingState = LoadingState.SuccessfulLoad,
@@ -348,8 +348,10 @@ class FamilyTasksViewModel @Inject constructor(
                             }
 
                             is Resource.Success -> {
-                                when (val resourceListTasks =
-                                    getTasksUseCase.invoke(type = TypeIdForApi.tasks)) {
+                                when (
+                                    val resourceListTasks =
+                                        getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                                ) {
                                     is Resource.Success -> {
                                         _state.value = state.value.copy(
                                             loadingState = LoadingState.SuccessfulLoad,
@@ -398,8 +400,10 @@ class FamilyTasksViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    when (val resourceListTasks =
-                        getTasksUseCase.invoke(type = TypeIdForApi.tasks)) {
+                    when (
+                        val resourceListTasks =
+                            getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                    ) {
                         is Resource.Success -> {
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.SuccessfulLoad,
@@ -476,11 +480,13 @@ class FamilyTasksViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _state.value = state.value.copy(loadingState = LoadingState.Loading)
-            when (val resourceChangePrice = editTaskUseCase.invoke(
-                property = "price",
-                value = points,
-                productUrl = productUrl,
-            )) {
+            when (
+                val resourceChangePrice = editTaskUseCase.invoke(
+                    property = "price",
+                    value = points,
+                    productUrl = productUrl,
+                )
+            ) {
                 is Resource.Error -> {
                     _state.value = state.value.copy(
                         loadingState = LoadingState.FailedLoad,
@@ -494,8 +500,10 @@ class FamilyTasksViewModel @Inject constructor(
 
                 is Resource.Success -> {
                     usersId.forEach { usersId ->
-                        when (val resource =
-                            sendPointsUseCase.invoke(usersId, points.toLong(), title)) {
+                        when (
+                            val resource =
+                                sendPointsUseCase.invoke(usersId, points.toLong(), title)
+                        ) {
                             is Resource.Error -> {
                                 _state.value = state.value.copy(
                                     loadingState = LoadingState.FailedLoad,
@@ -553,11 +561,13 @@ class FamilyTasksViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _state.value = state.value.copy(loadingState = LoadingState.Loading)
-            when (val resourceChangePrice = editTaskUseCase.invoke(
-                property = "price",
-                value = points,
-                productUrl = productUrl,
-            )) {
+            when (
+                val resourceChangePrice = editTaskUseCase.invoke(
+                    property = "price",
+                    value = points,
+                    productUrl = productUrl,
+                )
+            ) {
                 is Resource.Error -> {
                     _state.value = state.value.copy(
                         loadingState = LoadingState.FailedLoad,
@@ -571,8 +581,10 @@ class FamilyTasksViewModel @Inject constructor(
 
                 is Resource.Success -> {
                     usersId.forEach { usersId ->
-                        when (val resource =
-                            getPointsUseCase.invoke(usersId, points.toLong(), title)) {
+                        when (
+                            val resource =
+                                getPointsUseCase.invoke(usersId, points.toLong(), title)
+                        ) {
                             is Resource.Error -> {
                                 _state.value = state.value.copy(
                                     loadingState = LoadingState.FailedLoad,
@@ -637,7 +649,7 @@ class FamilyTasksViewModel @Inject constructor(
     ) {
         _state.value = state.value.copy(
             loadingState = LoadingState.Loading,
-            //initLoadingState = LoadingState.Loading
+            // initLoadingState = LoadingState.Loading
         )
         viewModelScope.launch {
             when (val resource = changeIndexUseCase(typeId, urlFrom, urlTo)) {
@@ -656,7 +668,6 @@ class FamilyTasksViewModel @Inject constructor(
                 is Resource.Success -> {
                     when (val resourceListTasks = getTasksUseCase(type = TypeIdForApi.tasks)) {
                         is Resource.Success -> {
-
                             _state.value = state.value.copy(
                                 loadingState = LoadingState.SuccessfulLoad,
                                 //  initLoadingState = LoadingState.SuccessfulLoad,

@@ -12,5 +12,5 @@ data class TechnicalSupportMessageDTO(
     @Json(name = "name")
     val name: String,
     @Json(name = "picture")
-    val picture:String
+    val picture: String
 )

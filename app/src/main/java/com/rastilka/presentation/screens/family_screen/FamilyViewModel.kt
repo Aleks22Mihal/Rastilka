@@ -37,7 +37,6 @@ class FamilyViewModel @Inject constructor(
 
     fun onEvent(event: FamilyScreenEvent) {
         when (event) {
-
             FamilyScreenEvent.Refresh -> {
                 init()
             }
@@ -75,7 +74,6 @@ class FamilyViewModel @Inject constructor(
         _state.value = state.value.copy(initLoadingState = LoadingState.Loading)
 
         viewModelScope.launch {
-
             val resourceUser = getUserBySessionKeyUseCase()
             val resourceFamilyMembers = getFamilyMembers()
 
@@ -132,13 +130,11 @@ class FamilyViewModel @Inject constructor(
     ) {
         _state.value = state.value.copy(loadingState = LoadingState.Loading)
         viewModelScope.launch {
-
             val hasIdInList = state.value.familyList.any { familyMember ->
                 familyMember.id == addUserId
             }
 
             if (!hasIdInList) {
-
                 when (val resource = attachUser(state.value.user?.id ?: "", addUserId)) {
                     is Resource.Error -> {
                         _state.value = state.value.copy(
@@ -156,11 +152,13 @@ class FamilyViewModel @Inject constructor(
                         getFamily()
                     }
                 }
-            } else _state.value = state.value.copy(
-                loadingState = LoadingState.FailedLoad,
-                isOpenErrorDialog = true,
-                errorText = "Пользователь уже добавлен"
-            )
+            } else {
+                _state.value = state.value.copy(
+                    loadingState = LoadingState.FailedLoad,
+                    isOpenErrorDialog = true,
+                    errorText = "Пользователь уже добавлен"
+                )
+            }
         }
     }
 
@@ -190,7 +188,6 @@ class FamilyViewModel @Inject constructor(
     }
 
     private fun addUserPoint(toUserId: String, point: Long) {
-
         _state.value = state.value.copy(loadingState = LoadingState.Loading)
 
         viewModelScope.launch {
@@ -210,13 +207,11 @@ class FamilyViewModel @Inject constructor(
                 is Resource.Success -> {
                     getFamily()
                 }
-
             }
         }
     }
 
     private fun getUserPoint(fromUserId: String, point: Long) {
-
         _state.value = state.value.copy(loadingState = LoadingState.Loading)
 
         viewModelScope.launch {

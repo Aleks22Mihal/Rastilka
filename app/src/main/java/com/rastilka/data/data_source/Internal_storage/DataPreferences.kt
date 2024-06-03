@@ -22,7 +22,8 @@ class DataPreferences @Inject constructor(
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
         val USER_SESSION_KEY = stringPreferencesKey("user_session")
         val SELECTED_LANGUAGE = stringPreferencesKey("selected_language")
-    //    val FILTER_TASKS_BY_USERS = stringPreferencesKey("filter_tasks_by_user")
+
+        //    val FILTER_TASKS_BY_USERS = stringPreferencesKey("filter_tasks_by_user")
         val DARK_MODE = stringPreferencesKey("dark_mode")
     }
 
@@ -57,5 +58,4 @@ class DataPreferences @Inject constructor(
             preferences[DARK_MODE] = darkMode.name
         }
     }
-
 }

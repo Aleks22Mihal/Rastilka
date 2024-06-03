@@ -26,7 +26,6 @@ import com.rastilka.presentation.components_app.generate_qr_code.rememberQrBitma
 fun QrCodeView(
     textId: String?
 ) {
-
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

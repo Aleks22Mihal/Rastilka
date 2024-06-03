@@ -22,14 +22,12 @@ import retrofit2.http.Path
 
 interface ApiService {
 
-    //*Получить сессию*//*
+    // *Получить сессию*//*
     @GET("api/login")
-    suspend fun getSession(
-    ): Response<String>
+    suspend fun getSession(): Response<String>
 
     @GET("api/login/getUserBySession")
-    suspend fun getUserBySession(
-    ): Response<UserDTO>
+    suspend fun getUserBySession(): Response<UserDTO>
 
     @POST("api/login/")
     suspend fun login(
@@ -95,8 +93,8 @@ interface ApiService {
         @Part("description") description: RequestBody? = null,
         @Part("price") price: RequestBody? = null,
         @Part picture: MultipartBody.Part? = null,
-        @Part ("date") date: RequestBody? = null,
-        @Part ("forUserId") forUserId: RequestBody? = null,
+        @Part("date") date: RequestBody? = null,
+        @Part("forUserId") forUserId: RequestBody? = null,
         @Part("newFileName") newFileName: RequestBody? = "".toRequestBody(),
     ): Response<Unit>
 
@@ -142,6 +140,7 @@ interface ApiService {
 
     @GET("api/cabinet/getTickets")
     suspend fun getTickets(): Response<List<TechnicalSupportMessageDTO>>
+
     @Multipart
     @POST("api/cabinet/postTickets")
     suspend fun postTickets(
@@ -149,24 +148,32 @@ interface ApiService {
     ): Response<List<TechnicalSupportMessageDTO>>
 
     /*
-        *//*Получить языки*//*
+     */
+    /*Получить языки*/
+    /*
     @GET("api/s/dictionaries")
     suspend fun getListLanguage(
     ): Response<List<Product>>
 
-    *//*Получить перевод сервера*//*
+     */
+    /*Получить перевод сервера*/
+    /*
     @GET("{language}/api/allTranslate")
     suspend fun getListAllTranslateServer(
         @Path("language") language: String = MainViewModel.languagePrefix
     ): Response<Map<String, String>>
 
-    *//*Получить перевод клиента*//*
+     */
+    /*Получить перевод клиента*/
+    /*
     @GET("{language}/api/info/allinfo")
     suspend fun getListAllTranslateClient(
         @Path("language") language: String = MainViewModel.languagePrefix
     ): Response<Map<String, String>>
 
-    *//*Получить каталог скидок*//*
+     */
+    /*Получить каталог скидок*/
+    /*
     @GET("{language}/api/s/stocks")
     suspend fun getStocks(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -175,7 +182,9 @@ interface ApiService {
         @Query("sort") sort: String = "less"
     ): Response<List<Product>>
 
-    *//*Получить катало*//*
+     */
+    /*Получить катало*/
+    /*
     @GET("{language}/api/")
     suspend fun getCatalog(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -184,7 +193,9 @@ interface ApiService {
         @Query("sort") sort: String = "less"
     ): Response<List<Product>>
 
-    *//*Получить секцию*//*
+     */
+    /*Получить секцию*/
+    /*
     @GET("{language}/api/s/{url}")
     suspend fun getSection(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -194,14 +205,18 @@ interface ApiService {
         @Query("sort") sort: String = "less"
     ): Response<List<Product>>
 
-    *//*Получить Юзера*//*
+     */
+    /*Получить Юзера*/
+    /*
     @GET("{language}/api/login/getUserBySession")
     suspend fun getUser(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
         @Path("language") language: String = MainViewModel.languagePrefix,
     ): Response<User>
 
-    *//*Зарегистрироваться*//*
+     */
+    /*Зарегистрироваться*/
+    /*
     @POST("{language}/api/login/register")
     suspend fun registration(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -209,14 +224,18 @@ interface ApiService {
         @Body body: RegistrationBody
     ): Response<LoginConditions>
 
-    *//*Разлогиниться*//*
+     */
+    /*Разлогиниться*/
+    /*
     @GET("{language}/api/login/logout")
     suspend fun logOut(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
         @Path("language") language: String = MainViewModel.languagePrefix,
     ): Response<Unit>
 
-    *//*Залогинится*//*
+     */
+    /*Залогинится*/
+    /*
     @POST("{language}/api/login")
     suspend fun logIn(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -224,7 +243,9 @@ interface ApiService {
         @Body body: LogInBody,
     ): Response<LoginConditions>
 
-    *//*Изменения пользователя*//*
+     */
+    /*Изменения пользователя*/
+    /*
     @Multipart
     @POST("{language}/api/cabinet/profilePut")
     suspend fun editUserAndPassword(
@@ -238,28 +259,36 @@ interface ApiService {
         @Part("pictureData") pictureData: RequestBody?,
     ): Response<User>
 
-    *//*Получение продкута*//*
+     */
+    /*Получение продкута*/
+    /*
     @GET("{language}/api/p/{url}")
     suspend fun getProduct(
         @Path("url") url: String,
         @Path("language") language: String = MainViewModel.languagePrefix,
     ): Response<Product>
 
-    *//*Получение Корзину*//*
+     */
+    /*Получение Корзину*/
+    /*
     @GET("{language}/api/renewShoppingCart")
     suspend fun getProductsInShoppingCart(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
         @Path("language") language: String = MainViewModel.languagePrefix,
     ): Response<List<ProductShoppingCart>>
 
-    *//*Получение суммы Корзину*//*
+     */
+    /*Получение суммы Корзину*/
+    /*
     @GET("{language}/api/shoppingCartSums")
     suspend fun getShoppingCartSum(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
         @Path("language") language: String = MainViewModel.languagePrefix,
     ): Response<ShoppingCartSum>
 
-    *//*Долбавить товар в корзину*//*
+     */
+    /*Долбавить товар в корзину*/
+    /*
     @GET("{language}/api/add/{productId}/{count}")
     suspend fun addProductsInShoppingCart(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -268,7 +297,9 @@ interface ApiService {
         @Path("count") count: Int,
     ): Response<List<ProductShoppingCart>>
 
-    *//*ИЗменить колличество товара*//*
+     */
+    /*ИЗменить колличество товара*/
+    /*
     @GET("{language}/api/put/{productId}/{count}")
     suspend fun changeCountProductInShoppingCart(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -277,7 +308,9 @@ interface ApiService {
         @Path("count") count: Int,
     ): Response<List<ProductShoppingCart>>
 
-    *//*Удалть товар из корзины*//*
+     */
+    /*Удалть товар из корзины*/
+    /*
     @GET("{language}/api/delete/{productId}/")
     suspend fun deleteProductInShoppingCart(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",
@@ -331,7 +364,9 @@ interface ApiService {
         @Path("language") language: String = MainViewModel.languagePrefix,
     ): Response<List<TechnicalSupportMessage>>
 
-    *//*Отправить сообщение в Тех.Под.*//*
+     */
+    /*Отправить сообщение в Тех.Под.*/
+    /*
     @POST("{language}/api/cabinet/postTickets")
     suspend fun postTickets(
         @Header("Authorization") session: String = "BearerSession ${MainViewModel.sessionKey}",

@@ -47,7 +47,6 @@ fun NavGraphBuilder.navProfileScreen(
                 )
             }
         ) {
-
             val viewModel = hiltViewModel<EditProfileScreenViewModel>()
 
             EditProfileScreen(
@@ -72,7 +71,6 @@ fun NavGraphBuilder.navProfileScreen(
                 )
             }
         ) {
-
             val viewModel = hiltViewModel<TechnicalSupportViewModel>()
 
             TechnicalSupportScreen(

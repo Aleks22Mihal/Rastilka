@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class ImageUpload @Inject constructor(
     @ApplicationContext private val appContext: Context
-): MultipartImageRepository {
+) : MultipartImageRepository {
 
     override fun createMultipartImage(selectedImage: Uri?, nameUploadImage: String): MultipartBody.Part? {
         return if (selectedImage != null) {

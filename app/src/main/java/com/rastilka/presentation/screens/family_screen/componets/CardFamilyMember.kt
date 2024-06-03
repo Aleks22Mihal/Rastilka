@@ -56,7 +56,6 @@ fun CardFamilyMember(
     userId: String,
     onEvent: (FamilyScreenEvent) -> Unit,
 ) {
-
     var point by remember { mutableStateOf("") }
     val pattern = remember { Regex("^\\d+\$") }
     val focus = remember { mutableStateOf(false) }
@@ -75,7 +74,6 @@ fun CardFamilyMember(
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 8.dp)
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start,
@@ -128,7 +126,8 @@ fun CardFamilyMember(
                                     expanded = expandedDropDownMenu,
                                     onDismissRequest = {
                                         expandedDropDownMenu = !expandedDropDownMenu
-                                    }) {
+                                    }
+                                ) {
                                     DropdownMenuItem(
                                         text = { Text(text = "Удалить") },
                                         leadingIcon = {
@@ -209,17 +208,18 @@ fun CardFamilyMember(
                                 .clearFocusOnKeyboardDismiss()
                         )
 
-                        IconButton(onClick = {
-                            if (point.isNotEmpty()) {
-                                onEvent(
-                                    FamilyScreenEvent.AddUserPoint(
-                                        toUserId = familyMember.id,
-                                        point = point.toLong()
+                        IconButton(
+                            onClick = {
+                                if (point.isNotEmpty()) {
+                                    onEvent(
+                                        FamilyScreenEvent.AddUserPoint(
+                                            toUserId = familyMember.id,
+                                            point = point.toLong()
+                                        )
                                     )
-                                )
+                                }
+                                point = ""
                             }
-                            point = ""
-                        }
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_plus),

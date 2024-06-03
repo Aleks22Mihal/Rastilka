@@ -26,11 +26,9 @@ fun rememberQrBitmapPainter(
     size: Dp = 200.dp,
     padding: Dp = 0.dp
 ): BitmapPainter {
-
     val density = LocalDensity.current
     val sizePx = with(density) { size.roundToPx() }
     val paddingPx = with(density) { padding.roundToPx() }
-
 
     var bitmap by remember(content) {
         mutableStateOf<Bitmap?>(null)
@@ -49,8 +47,11 @@ fun rememberQrBitmapPainter(
 
             val bitmapMatrix = try {
                 qrCodeWriter.encode(
-                    content, BarcodeFormat.QR_CODE,
-                    sizePx, sizePx, encodeHints
+                    content,
+                    BarcodeFormat.QR_CODE,
+                    sizePx,
+                    sizePx,
+                    encodeHints
                 )
             } catch (ex: WriterException) {
                 null

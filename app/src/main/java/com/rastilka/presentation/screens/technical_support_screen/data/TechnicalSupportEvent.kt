@@ -4,11 +4,11 @@ sealed class TechnicalSupportEvent {
 
     data object Refresh : TechnicalSupportEvent()
 
-    data object SendMessage: TechnicalSupportEvent()
+    data object SendMessage : TechnicalSupportEvent()
 
-    data object GetMessage: TechnicalSupportEvent()
+    data object GetMessage : TechnicalSupportEvent()
 
     data class ChangeMessage(
         val message: String
-    ): TechnicalSupportEvent()
+    ) : TechnicalSupportEvent()
 }

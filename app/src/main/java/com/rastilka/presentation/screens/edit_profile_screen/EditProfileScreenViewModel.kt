@@ -35,7 +35,6 @@ class EditProfileScreenViewModel @Inject constructor(
 
     fun onEvent(event: EditProfileScreenEvent) {
         when (event) {
-
             EditProfileScreenEvent.Refresh -> {
                 init()
             }
@@ -107,7 +106,6 @@ class EditProfileScreenViewModel @Inject constructor(
     }
 
     private fun editUserAndPassword() {
-
         if (state.value.editName != state.value.user?.name ||
             state.value.editEmail != state.value.user?.mail ||
             state.value.editPassword != null ||
@@ -129,19 +127,19 @@ class EditProfileScreenViewModel @Inject constructor(
                     editPasswordError = validatePasswordResource.message,
                     editNameError = validateUserNameResource.message
                 )
-
             } else {
-
                 _state.value = state.value.copy(
                     loadingState = LoadingState.Loading
                 )
                 viewModelScope.launch {
-                    when (val resource = editUserAndPasswordUseCase(
-                        name = state.value.editName,
-                        email = state.value.editEmail,
-                        password = state.value.editPassword,
-                        pictureUri = state.value.editPhoto
-                    )) {
+                    when (
+                        val resource = editUserAndPasswordUseCase(
+                            name = state.value.editName,
+                            email = state.value.editEmail,
+                            password = state.value.editPassword,
+                            pictureUri = state.value.editPhoto
+                        )
+                    ) {
                         is Resource.Success -> {
                             _state.value = state.value.copy(
                                 user = resource.data,

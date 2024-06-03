@@ -55,22 +55,23 @@ import com.rastilka.presentation.screens.family_screen.componets.ModalBottomQrCo
 import com.rastilka.presentation.screens.family_screen.data.FamilyScreenEvent
 import com.rastilka.presentation.screens.family_screen.data.FamilyScreenState
 
-@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyScreen(
     state: State<FamilyScreenState>,
     onEvent: (FamilyScreenEvent) -> Unit
 ) {
-
     val stateRefresh = rememberPullToRefreshState(
         positionalThreshold = 180.dp,
         enabled = {
             state.value.initLoadingState == LoadingState.SuccessfulLoad
         }
     )
-    val scaleFraction = if (stateRefresh.isRefreshing) 1f else
+    val scaleFraction = if (stateRefresh.isRefreshing) {
+        1f
+    } else {
         LinearOutSlowInEasing.transform(stateRefresh.progress).coerceIn(0f, 1f)
+    }
 
     val focusManager = LocalFocusManager.current
 
@@ -134,7 +135,6 @@ fun FamilyScreen(
     ) { innerPadding ->
 
         when (state.value.initLoadingState) {
-
             LoadingState.SuccessfulLoad -> {
                 Column(
                     verticalArrangement = Arrangement.Top,
@@ -144,7 +144,6 @@ fun FamilyScreen(
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
                 ) {
-
                     val scrollListState = rememberLazyListState()
 
                     LazyColumn(
@@ -170,7 +169,6 @@ fun FamilyScreen(
                     }
 
                     if (state.value.isOpenBottomSheet) {
-
                         val sheetState =
                             rememberModalBottomSheetState(skipPartiallyExpanded = true)
 

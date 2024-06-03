@@ -92,7 +92,6 @@ class CreateTaskViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-
                     when (val resourceFamilyMembers = getFamilyMembersUseCase()) {
                         is Resource.Error -> {
                             _state.value = state.value.copy(
@@ -108,7 +107,6 @@ class CreateTaskViewModel @Inject constructor(
                         }
 
                         is Resource.Success -> {
-
                             val date = LocalDateTime.now()
                                 .atZone(ZoneId.systemDefault())
                                 .toInstant()
@@ -121,7 +119,6 @@ class CreateTaskViewModel @Inject constructor(
                                 dateMillis = date,
                                 loadingState = LoadingState.SuccessfulLoad
                             )
-
                         }
                     }
                 }
@@ -134,21 +131,22 @@ class CreateTaskViewModel @Inject constructor(
             loadingState = LoadingState.Loading
         )
         viewModelScope.launch {
-
             val apiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
             val install = Instant.ofEpochMilli(state.value.dateMillis)
             val date = LocalDateTime.ofInstant(install, ZoneId.systemDefault())
             val formatDate = date.format(apiFormat)
 
-            when (val resource = createTaskOrWishUseCase(
-                typeId = TypeId.task.name,
-                lastUrl = "${state.value.user?.id}_tasks",
-                price = state.value.countPrice,
-                h1 = state.value.titleText,
-                forUserId = state.value.selectedFamilyMemberId,
-                date = formatDate,
-                picture = imageUri
-            )) {
+            when (
+                val resource = createTaskOrWishUseCase(
+                    typeId = TypeId.task.name,
+                    lastUrl = "${state.value.user?.id}_tasks",
+                    price = state.value.countPrice,
+                    h1 = state.value.titleText,
+                    forUserId = state.value.selectedFamilyMemberId,
+                    date = formatDate,
+                    picture = imageUri
+                )
+            ) {
                 is Resource.Error -> {
                     _state.value = state.value.copy(
                         loadingState = LoadingState.FailedLoad,

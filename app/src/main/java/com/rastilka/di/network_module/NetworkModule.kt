@@ -4,8 +4,8 @@ import com.rastilka.BuildConfig
 import com.rastilka.data.data_source.Internal_storage.DataPreferences
 import com.rastilka.data.data_source.remote.ApiService
 import com.rastilka.data.repository.MainRepositoryImpl
-import com.rastilka.domain.repository.MainRepository
 import com.rastilka.data.utilits.image_upload.ImageUpload
+import com.rastilka.domain.repository.MainRepository
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -28,7 +28,6 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(dataPreferences: DataPreferences): OkHttpClient {
-
         val loginInterceptor: HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
             this.level = HttpLoggingInterceptor.Level.BODY
         }
@@ -49,13 +48,11 @@ object NetworkModule {
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
-
     }
 
     @Provides
     @Singleton
     fun provideRestClient(client: OkHttpClient): ApiService {
-
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()

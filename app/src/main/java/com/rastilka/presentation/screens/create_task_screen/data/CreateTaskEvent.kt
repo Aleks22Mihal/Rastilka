@@ -14,11 +14,11 @@ sealed class CreateTaskEvent {
 
     data class OpenDatePickerDialog(
         val isOpen: Boolean
-    ): CreateTaskEvent()
+    ) : CreateTaskEvent()
 
     data class SetSelectedDate(
         val date: Long
-    ): CreateTaskEvent()
+    ) : CreateTaskEvent()
 
     data class CreateTask(
         val navController: NavController,

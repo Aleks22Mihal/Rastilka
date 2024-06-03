@@ -9,7 +9,7 @@ class DetachUserUseCase @Inject constructor(private val mainRepository: MainRepo
     suspend operator fun invoke(
         userOneId: String,
         userTwoId: String,
-    ):Resource<Unit> {
-       return mainRepository.detachUser(userOneId, userTwoId)
+    ): Resource<Unit> {
+        return mainRepository.detachUser(userOneId, userTwoId)
     }
 }

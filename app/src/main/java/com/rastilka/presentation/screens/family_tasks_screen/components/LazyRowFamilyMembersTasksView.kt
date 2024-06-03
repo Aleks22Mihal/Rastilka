@@ -65,7 +65,9 @@ internal fun LazyRowFamilyMembersTasksView(
                         shape = CircleShape,
                         color = if (state.value.filterDateNow) {
                             Color.Transparent
-                        } else MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.secondary
+                        }
                     )
                     .size(55.dp)
             ) {
@@ -96,13 +98,15 @@ internal fun LazyRowFamilyMembersTasksView(
 
 @Preview(showBackground = true, backgroundColor = android.graphics.Color.LTGRAY.toLong())
 @Composable
-private fun DemoLazyRowFamilyMembersTasksView(){
+private fun DemoLazyRowFamilyMembersTasksView() {
     RastilkaTheme {
         LazyRowFamilyMembersTasksView(
             state = remember {
-                mutableStateOf(FamilyTasksScreenState(
-                    familyMembers = SupportPreview.listFamily
-                ))
+                mutableStateOf(
+                    FamilyTasksScreenState(
+                        familyMembers = SupportPreview.listFamily
+                    )
+                )
             },
             onEvent = {}
         )

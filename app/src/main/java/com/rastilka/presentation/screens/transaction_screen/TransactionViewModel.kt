@@ -4,9 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rastilka.common.Resource
 import com.rastilka.common.app_data.LoadingState
-import com.rastilka.domain.models.Transaction
 import com.rastilka.domain.use_case.GetTransactionUseCase
-import com.rastilka.presentation.screens.family_screen.data.FamilyScreenEvent
 import com.rastilka.presentation.screens.transaction_screen.data.TransactionScreenEvent
 import com.rastilka.presentation.screens.transaction_screen.data.TransactionScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,8 +25,8 @@ class TransactionViewModel @Inject constructor(
         init()
     }
 
-    fun onEvent(event: TransactionScreenEvent){
-        when(event){
+    fun onEvent(event: TransactionScreenEvent) {
+        when (event) {
             TransactionScreenEvent.Refresh -> {
                 init()
             }

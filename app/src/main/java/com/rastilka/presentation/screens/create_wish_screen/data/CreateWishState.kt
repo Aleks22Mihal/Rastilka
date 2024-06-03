@@ -1,4 +1,4 @@
-package com.rastilka.presentation.screens.create_task_screen.data
+package com.rastilka.presentation.screens.create_wish_screen.data
 
 import com.rastilka.common.app_data.LoadingState
 import com.rastilka.domain.models.User

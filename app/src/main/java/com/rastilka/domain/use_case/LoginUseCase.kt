@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(private val repository: MainRepository) {
 
-     suspend operator fun invoke(logInBody: LogInBody): Resource<UserWithCondition> {
-         return repository.login(logInBody)
-     }
+    suspend operator fun invoke(logInBody: LogInBody): Resource<UserWithCondition> {
+        return repository.login(logInBody)
+    }
 }

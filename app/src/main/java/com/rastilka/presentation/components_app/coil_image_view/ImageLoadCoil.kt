@@ -27,7 +27,7 @@ fun ImageLoadCoil(
     SubcomposeAsyncImage(
         modifier = modifier,
         model = ImageRequest.Builder(LocalContext.current)
-            .data("${BuildConfig.SERVER_URL}${model}")
+            .data("${BuildConfig.SERVER_URL}$model")
             .crossfade(true)
             .networkCachePolicy(CachePolicy.ENABLED)
             .diskCachePolicy(CachePolicy.DISABLED)

@@ -38,7 +38,8 @@ fun ErrorView(
             textAlign = TextAlign.Center,
         )
         Button(
-            onClick = { refreshFun() }) {
+            onClick = { refreshFun() }
+        ) {
             Text(
                 text = "Попробуйте еще раз",
             )
