@@ -20,11 +20,11 @@ class ValidateUserNameUseCase @Inject constructor() {
             )
 
             name.first().isWhitespace() -> Resource.Error(
-                message = "В поле имя не допускаются пробел в начале"
+                message = "В поле имя не допускается пробел в начале"
             )
 
             name.last().isWhitespace() -> Resource.Error(
-                message = "В поле имя не допускаются пробел в конце"
+                message = "В поле имя не допускается пробел в конце"
             )
 
             !name.split(" ").all { it.isNotBlank() } -> Resource.Error(

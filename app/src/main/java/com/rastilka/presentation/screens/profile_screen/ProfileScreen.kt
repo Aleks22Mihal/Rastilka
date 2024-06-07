@@ -23,8 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,7 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.rastilka.R
-import com.rastilka.presentation.screens.login_screen.LoginViewModel
+import com.rastilka.presentation.screens.login_screen.data.LoginScreenEvent
+import com.rastilka.presentation.screens.login_screen.data.LoginScreenState
 import com.rastilka.presentation.screens.profile_screen.components.ProfileMenuView
 import com.rastilka.presentation.screens.profile_screen.components.UserView
 import com.rastilka.presentation.screens.profile_screen.data.ProfileMenuButton
@@ -43,10 +43,9 @@ import com.rastilka.presentation.screens.profile_screen.data.ProfileMenuButton
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: LoginViewModel
+    state: State<LoginScreenState>,
+    onEvent: (LoginScreenEvent) -> Unit
 ) {
-
-    val user by viewModel.user.collectAsState()
 
     val listButtonMenu: List<ProfileMenuButton> =
         listOf(ProfileMenuButton.ProfileEditor, ProfileMenuButton.TechnicalSupport)
@@ -62,7 +61,7 @@ fun ProfileScreen(
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
                         Text(
-                            text = user?.canUsePoints?.toString() ?: "",
+                            text = state.value.user?.canUsePoints?.toString() ?: "",
                             fontSize = 16.sp,
                             lineHeight = 21.sp,
                             fontWeight = FontWeight(600)
@@ -99,7 +98,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(20.dp)
             ) {
-                UserView(user = user)
+                UserView(user = state.value.user)
             }
             ProfileMenuView(
                 listButtonMenu = listButtonMenu,
@@ -108,7 +107,7 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
-                    viewModel.logOut()
+                    onEvent(LoginScreenEvent.LogOut)
                 },
                 shape = MaterialTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(

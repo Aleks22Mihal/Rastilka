@@ -1,4 +1,4 @@
-package com.rastilka.presentation.screens.edit_profile_screen.component
+package com.rastilka.presentation.components_app.edit_text_field
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,25 +29,31 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rastilka.R
 import com.rastilka.presentation.components_app.animate_vertical_alignment_as_state.animateHorizontalAlignmentAsState
 import com.rastilka.presentation.components_app.clean_focus_keyboard.clearFocusOnKeyboardDismiss
 import com.rastilka.presentation.ui.theme.RastilkaTheme
 
 @Composable
-fun EditProfileTextFieldView(
+fun EditTextFieldView(
     value: String,
     labelText: String? = null,
     textError: String? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions,
     onValueChange: (String) -> Unit,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     var focusState by remember { mutableStateOf(false) }
 
@@ -57,6 +65,7 @@ fun EditProfileTextFieldView(
         textStyle = LocalTextStyle.current.copy(
             fontSize = 16.sp
         ),
+        visualTransformation = visualTransformation,
         decorationBox = { innerTextField ->
 
             val alignmentAnimate by animateHorizontalAlignmentAsState(
@@ -96,8 +105,8 @@ fun EditProfileTextFieldView(
                         Alignment.CenterStart
                     },
                     modifier = Modifier
-                        .clip(MaterialTheme.shapes.medium)
                         .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium)
                         .heightIn(min = 50.dp)
                         .background(Color(0xFFF4F5FA))
                         .border(
@@ -107,11 +116,13 @@ fun EditProfileTextFieldView(
                         )
 
                 ) {
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
                                 start = 15.dp,
+                                end = if (trailingIcon != null) 50.dp else 0.dp,
                                 bottom = if (labelText != null) 5.dp else 0.dp
                             )
                     ) {
@@ -129,6 +140,15 @@ fun EditProfileTextFieldView(
                                 .padding(start = 15.dp)
                                 .align(alignmentAnimate)
                         )
+                    }
+
+                    if (trailingIcon != null) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                        ) {
+                            trailingIcon()
+                        }
                     }
                 }
 
@@ -165,7 +185,7 @@ private fun DemoEditProfileTextFieldView() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            EditProfileTextFieldView(
+            EditTextFieldView(
                 value = "",
                 labelText = "Ваше Имя",
                 onValueChange = { },
@@ -177,7 +197,7 @@ private fun DemoEditProfileTextFieldView() {
                 )
             )
 
-            EditProfileTextFieldView(
+            EditTextFieldView(
                 value = "Имя",
                 labelText = "Ваше Имя",
                 onValueChange = { },
@@ -189,7 +209,7 @@ private fun DemoEditProfileTextFieldView() {
                 )
             )
 
-            EditProfileTextFieldView(
+            EditTextFieldView(
                 value = "Имя",
                 labelText = "Ваше Имя",
                 textError = "Длинная ошибка, которую нельзя исправить, просто так",
@@ -202,7 +222,7 @@ private fun DemoEditProfileTextFieldView() {
                 )
             )
 
-            EditProfileTextFieldView(
+            EditTextFieldView(
                 value = "Имя",
                 onValueChange = { },
                 keyboardOptions = KeyboardOptions(
@@ -211,6 +231,29 @@ private fun DemoEditProfileTextFieldView() {
                     autoCorrect = true,
                     imeAction = ImeAction.Next
                 )
+            )
+
+            EditTextFieldView(
+                value = "11111111111111111111111111111111111111111111111111111",
+                labelText = "Ваше Имя",
+                onValueChange = { },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Sentences,
+                    autoCorrect = true,
+                    imeAction = ImeAction.Next
+                ),
+                visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { /*Todo*/ }) {
+                        Icon(
+                            painter = painterResource(
+                                id = R.drawable.baseline_visibility_24
+                            ),
+                            contentDescription = "Visibility",
+                        )
+                    }
+                }
             )
         }
     }

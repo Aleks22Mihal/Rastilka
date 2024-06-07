@@ -3,9 +3,6 @@ package com.rastilka.data.repository
 import android.net.Uri
 import androidx.core.net.toUri
 import com.rastilka.common.Resource
-import com.rastilka.common.app_data.EditTaskBody
-import com.rastilka.common.app_data.LogInBody
-import com.rastilka.common.app_data.PriceBody
 import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.data.data_source.remote.ApiService
 import com.rastilka.data.mappers.maoToTechnicalSupportMessage
@@ -13,6 +10,9 @@ import com.rastilka.data.mappers.mapToTaskOrWish
 import com.rastilka.data.mappers.mapToTransaction
 import com.rastilka.data.mappers.mapToUser
 import com.rastilka.data.mappers.mapToUserWithCondition
+import com.rastilka.data.models.EditTaskBody
+import com.rastilka.data.models.PriceBody
+import com.rastilka.data.models.UserWithConditionDTO
 import com.rastilka.data.utilits.image_upload.ImageUpload
 import com.rastilka.data.utilits.image_upload.NameUploadImage
 import com.rastilka.domain.models.TaskOrWish
@@ -23,7 +23,6 @@ import com.rastilka.domain.models.UserWithCondition
 import com.rastilka.domain.repository.MainRepository
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
-import retrofit2.Response
 import java.io.IOException
 import javax.inject.Inject
 
@@ -32,8 +31,20 @@ class MainRepositoryImpl @Inject constructor(
     private val upload: ImageUpload
 ) : MainRepository {
 
-    override suspend fun getSession(): Response<String> {
-        return apiService.getSession()
+    override suspend fun getSession(): Resource<String> {
+        return try {
+            val response = apiService.getSession()
+            if (response.isSuccessful) {
+                val result = response.body()
+                Resource.Success(result)
+            } else {
+                Resource.Error(message = "Данные не получены")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
     }
 
     override suspend fun getUserBySession(): Resource<User> {
@@ -52,9 +63,15 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun login(body: LogInBody): Resource<UserWithCondition> {
+    override suspend fun login(
+        email: String,
+        password: String
+    ): Resource<UserWithCondition> {
         return try {
-            val response = apiService.login(body)
+            val response = apiService.login(
+                email = email.toRequestBody(),
+                password = password.toRequestBody()
+            )
             if (response.isSuccessful) {
                 val result = response.body()?.mapToUserWithCondition()
                 Resource.Success(result)
@@ -68,8 +85,58 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun logout(): Response<Unit> {
-        return apiService.logout()
+    override suspend fun logout(): Resource<Unit> {
+        return try {
+            val response = apiService.logout()
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(message = "Что - то пошло не так")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
+    }
+
+    override suspend fun registration(
+        name: String,
+        email: String,
+        password: String
+    ): Resource<UserWithCondition> {
+        return try {
+            val response = apiService.registration(
+                name = name.toRequestBody(),
+                email = email.toRequestBody(),
+                password = password.toRequestBody()
+            )
+            if (response.isSuccessful) {
+                val result = response.body()?.mapToUserWithCondition()
+                Resource.Success(result)
+            } else {
+                Resource.Error(message = "Данные не получены")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
+    }
+
+    override suspend fun forgetPassword(email: String): Resource<Unit> {
+        return try {
+            val response = apiService.forgetPassword(email = email.toRequestBody())
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(message = "Что - то пошло не так")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(message = e.localizedMessage ?: "Что - то пошло не так")
+        } catch (e: IOException) {
+            Resource.Error(message = "Нет интернета")
+        }
     }
 
     override suspend fun getFamilyList(): Resource<List<User>> {
@@ -130,7 +197,7 @@ class MainRepositoryImpl @Inject constructor(
             val response = apiService.sendPoint(
                 toUserId = toUserId,
                 points = points,
-                body = PriceBody(comment)
+                body = PriceBody(comment = comment)
             )
             if (response.isSuccessful) {
                 val result = response.body()?.mapToUser()
@@ -155,7 +222,7 @@ class MainRepositoryImpl @Inject constructor(
             val response = apiService.getPoint(
                 fromUserId = fromUserId,
                 points = points,
-                body = PriceBody(comment)
+                body = PriceBody(comment = comment)
             )
             if (response.isSuccessful) {
                 val result = response.body()?.mapToUser()

@@ -27,7 +27,8 @@ fun NavGraphBuilder.navProfileScreen(
     ) {
         composable(route = NavigationScreens.ProfileScreen.rout) {
             ProfileScreen(
-                viewModel = loginViewModel,
+                state = loginViewModel.state.collectAsState(),
+                onEvent = loginViewModel::onEvent,
                 navController = navController,
             )
         }

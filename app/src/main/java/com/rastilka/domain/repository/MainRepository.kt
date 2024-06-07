@@ -2,24 +2,32 @@ package com.rastilka.domain.repository
 
 import android.net.Uri
 import com.rastilka.common.Resource
-import com.rastilka.common.app_data.LogInBody
 import com.rastilka.common.app_data.TypeIdForApi
 import com.rastilka.domain.models.TaskOrWish
 import com.rastilka.domain.models.TechnicalSupportMessage
 import com.rastilka.domain.models.Transaction
 import com.rastilka.domain.models.User
 import com.rastilka.domain.models.UserWithCondition
-import retrofit2.Response
 
 interface MainRepository {
 
-    suspend fun getSession(): Response<String>
+    suspend fun getSession(): Resource<String>
 
     suspend fun getUserBySession(): Resource<User>
 
-    suspend fun login(body: LogInBody): Resource<UserWithCondition>
+    suspend fun login(
+        email: String,
+        password: String
+    ): Resource<UserWithCondition>
 
-    suspend fun logout(): Response<Unit>
+    suspend fun logout(): Resource<Unit>
+    suspend fun registration(
+        name: String,
+        email: String,
+        password: String,
+    ): Resource<UserWithCondition>
+
+    suspend fun forgetPassword(email: String): Resource<Unit>
 
     suspend fun getFamilyList(): Resource<List<User>>
 

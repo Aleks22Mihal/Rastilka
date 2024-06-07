@@ -19,9 +19,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rastilka.common.utilits_support_preview.SupportPreview
+import com.rastilka.presentation.components_app.edit_text_field.EditTextFieldView
+import com.rastilka.presentation.components_app.edit_text_field.data.EditTextField
 import com.rastilka.presentation.screens.edit_profile_screen.data.EditProfileScreenEvent
 import com.rastilka.presentation.screens.edit_profile_screen.data.EditProfileScreenState
-import com.rastilka.presentation.screens.edit_profile_screen.data.EditTextField
 import com.rastilka.presentation.ui.theme.RastilkaTheme
 
 @Composable
@@ -87,7 +88,7 @@ fun EditProfileAttributesView(
     ) {
         listTextField.forEach { editTextField ->
 
-            EditProfileTextFieldView(
+            EditTextFieldView(
                 value = editTextField.value,
                 textError = editTextField.textError,
                 labelText = editTextField.textLabel,

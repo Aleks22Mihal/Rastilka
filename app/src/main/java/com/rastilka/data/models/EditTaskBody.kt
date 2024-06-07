@@ -1,4 +1,4 @@
-package com.rastilka.common.app_data
+package com.rastilka.data.models
 
 data class EditTaskBody(
     val value: String

@@ -23,7 +23,7 @@ class ValidateEmailUseCase @Inject constructor() {
 
         if (!emailAddressPattern.matcher(email).matches()) {
             return Resource.Error(
-                message = "Не верный адрес электронной почты"
+                message = "Неверный формат почты"
             )
         }
         return Resource.Success(data = null)

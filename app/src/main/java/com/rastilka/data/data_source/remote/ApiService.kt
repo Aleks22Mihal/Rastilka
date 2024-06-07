@@ -1,9 +1,8 @@
 package com.rastilka.data.data_source.remote
 
-import com.rastilka.common.app_data.EditTaskBody
-import com.rastilka.common.app_data.LogInBody
-import com.rastilka.common.app_data.PriceBody
 import com.rastilka.common.app_data.TypeIdForApi
+import com.rastilka.data.models.EditTaskBody
+import com.rastilka.data.models.PriceBody
 import com.rastilka.data.models.TaskOrWishDTO
 import com.rastilka.data.models.TechnicalSupportMessageDTO
 import com.rastilka.data.models.TransactionDTO
@@ -29,10 +28,27 @@ interface ApiService {
     @GET("api/login/getUserBySession")
     suspend fun getUserBySession(): Response<UserDTO>
 
+    @Multipart
     @POST("api/login/")
     suspend fun login(
-        @Body body: LogInBody
+        @Part("mail") email: RequestBody,
+        @Part("password") password: RequestBody,
     ): Response<UserWithConditionDTO>
+
+    @Multipart
+    @POST("api/login/register")
+    suspend fun registration(
+        @Part("name") name: RequestBody,
+        @Part("mail") email: RequestBody,
+        @Part("password") password: RequestBody,
+        @Part("phone") phone: RequestBody? = null,
+    ): Response<UserWithConditionDTO>
+
+    @Multipart
+    @POST("api/login/forget")
+    suspend fun forgetPassword(
+        @Part("mail") email: RequestBody,
+    ): Response<Unit>
 
     @GET("api/login/logout")
     suspend fun logout(): Response<Unit>
