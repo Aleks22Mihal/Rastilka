@@ -518,33 +518,26 @@ class FamilyTasksViewModel @Inject constructor(
                             }
 
                             is Resource.Success -> {
-                                _state.value =
-                                    state.value.copy(loadingState = LoadingState.SuccessfulLoad)
-                            }
-                        }
-                    }.also {
-                        when (
-                            val resourceListTasks =
-                                getTasksUseCase.invoke(type = TypeIdForApi.tasks)
-                        ) {
-                            is Resource.Error -> {
-                                _state.value = state.value.copy(
-                                    loadingState = LoadingState.FailedLoad,
-                                    errorMessage = resourceListTasks.message ?: ""
-                                )
-                            }
+                                val resourceListTasks =
+                                    getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                                val resourceFamilyMembers = getFamilyMembers.invoke()
 
-                            is Resource.Loading -> {
-                                _state.value =
-                                    state.value.copy(loadingState = LoadingState.Loading)
-                            }
-
-                            is Resource.Success -> {
-                                _state.value = state.value.copy(
-                                    loadingState = LoadingState.SuccessfulLoad,
-                                    tasksList = resourceListTasks.data ?: emptyList()
-                                )
-                                getFilterTasks()
+                                if (resourceFamilyMembers is Resource.Success &&
+                                    resourceListTasks is Resource.Success
+                                ) {
+                                    _state.value =
+                                        state.value.copy(
+                                            tasksList = resourceListTasks.data ?: emptyList(),
+                                            familyMembers = resourceFamilyMembers.data
+                                                ?: emptyList(),
+                                            loadingState = LoadingState.SuccessfulLoad
+                                        )
+                                    getFilterTasks()
+                                } else {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.FailedLoad
+                                    )
+                                }
                             }
                         }
                     }
@@ -599,33 +592,26 @@ class FamilyTasksViewModel @Inject constructor(
                             }
 
                             is Resource.Success -> {
-                                _state.value =
-                                    state.value.copy(loadingState = LoadingState.SuccessfulLoad)
-                            }
-                        }
-                    }.also {
-                        when (
-                            val resourceListTasks =
-                                getTasksUseCase.invoke(type = TypeIdForApi.tasks)
-                        ) {
-                            is Resource.Error -> {
-                                _state.value = state.value.copy(
-                                    loadingState = LoadingState.FailedLoad,
-                                    errorMessage = resourceListTasks.message ?: ""
-                                )
-                            }
+                                val resourceListTasks =
+                                    getTasksUseCase.invoke(type = TypeIdForApi.tasks)
+                                val resourceFamilyMembers = getFamilyMembers.invoke()
 
-                            is Resource.Loading -> {
-                                _state.value =
-                                    state.value.copy(loadingState = LoadingState.Loading)
-                            }
-
-                            is Resource.Success -> {
-                                _state.value = state.value.copy(
-                                    loadingState = LoadingState.SuccessfulLoad,
-                                    tasksList = resourceListTasks.data ?: emptyList()
-                                )
-                                getFilterTasks()
+                                if (resourceFamilyMembers is Resource.Success &&
+                                    resourceListTasks is Resource.Success
+                                ) {
+                                    _state.value =
+                                        state.value.copy(
+                                            tasksList = resourceListTasks.data ?: emptyList(),
+                                            familyMembers = resourceFamilyMembers.data
+                                                ?: emptyList(),
+                                            loadingState = LoadingState.SuccessfulLoad
+                                        )
+                                    getFilterTasks()
+                                } else {
+                                    _state.value = state.value.copy(
+                                        loadingState = LoadingState.FailedLoad
+                                    )
+                                }
                             }
                         }
                     }
