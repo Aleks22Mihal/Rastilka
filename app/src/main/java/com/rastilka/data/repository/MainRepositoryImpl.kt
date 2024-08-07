@@ -1,6 +1,7 @@
 package com.rastilka.data.repository
 
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toUri
 import com.rastilka.common.Resource
 import com.rastilka.common.app_data.TypeIdForApi
@@ -12,7 +13,6 @@ import com.rastilka.data.mappers.mapToUser
 import com.rastilka.data.mappers.mapToUserWithCondition
 import com.rastilka.data.models.EditTaskBody
 import com.rastilka.data.models.PriceBody
-import com.rastilka.data.models.UserWithConditionDTO
 import com.rastilka.data.utilits.image_upload.ImageUpload
 import com.rastilka.data.utilits.image_upload.NameUploadImage
 import com.rastilka.domain.models.TaskOrWish
@@ -50,6 +50,7 @@ class MainRepositoryImpl @Inject constructor(
     override suspend fun getUserBySession(): Resource<User> {
         return try {
             val response = apiService.getUserBySession()
+            Log.e("12343", "${ response.message() } \n ${response.body()}")
             if (response.isSuccessful) {
                 val result = response.body()?.mapToUser()
                 Resource.Success(data = result)
@@ -157,11 +158,11 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun attachUser(userOneId: String, userTwoId: String): Resource<User> {
+    override suspend fun attachUser(userOneId: String, userTwoId: String): Resource<Unit> {
         return try {
             val response = apiService.attachUser(userOneId, userTwoId)
             if (response.isSuccessful) {
-                Resource.Success(data = response.body()?.mapToUser())
+                Resource.Success(Unit)
             } else {
                 Resource.Error(message = "Данные не получены")
             }

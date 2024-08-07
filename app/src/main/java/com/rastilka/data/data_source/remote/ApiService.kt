@@ -60,7 +60,7 @@ interface ApiService {
     suspend fun attachUser(
         @Path("userOneId") userOneId: String,
         @Path("userTwoId") userTwoId: String,
-    ): Response<UserDTO>
+    ): Response<Unit>
 
     @GET("api/friend/detachUser/{userOneId}/{userTwoId}")
     suspend fun detachUser(

@@ -99,7 +99,7 @@ class TechnicalSupportViewModel @Inject constructor(
             } else {
                 _state.value = state.value.copy(
                     initLoadingState = LoadingState.FailedLoad,
-                    message = resourceTechnicalSupportMessages.message ?: resourceUser.message ?: ""
+                    errorMessage = resourceTechnicalSupportMessages.message ?: resourceUser.message ?: ""
                 )
             }
         }

@@ -31,7 +31,7 @@ interface MainRepository {
 
     suspend fun getFamilyList(): Resource<List<User>>
 
-    suspend fun attachUser(userOneId: String, userTwoId: String): Resource<User>
+    suspend fun attachUser(userOneId: String, userTwoId: String): Resource<Unit>
 
     suspend fun detachUser(userOneId: String, userTwoId: String): Resource<Unit>
 
